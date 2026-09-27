@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../controllers/app_controller.dart';
 import '../../booking/booking_step1_screen.dart';
@@ -103,6 +104,36 @@ class FeaturesGrid extends StatelessWidget {
                         child: Image.asset(
                           feat['image'] as String,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: isDark ? AppColors.cardDark : Colors.white,
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  feat['title'] == 'Emergency'
+                                      ? Icons.warning_amber_rounded
+                                      : feat['title'] == 'Home Service'
+                                          ? Icons.home_repair_service_rounded
+                                          : Icons.calendar_month_rounded,
+                                  color: feat['title'] == 'Emergency'
+                                      ? AppColors.emergency
+                                      : AppColors.primary,
+                                  size: 36,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  feat['title'] as String,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),

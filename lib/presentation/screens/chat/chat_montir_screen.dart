@@ -88,6 +88,14 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
                 child: Image.asset(
                   'assets/images/mechanic_avatar.png',
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: AppColors.primary,
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -163,6 +163,16 @@ class TipsCard extends StatelessWidget {
                       child: Image.asset(
                         'assets/images/tips_oil.png',
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: AppColors.primaryContainerLight,
+                          child: const Center(
+                            child: Icon(
+                              Icons.oil_barrel_rounded,
+                              color: AppColors.primary,
+                              size: 32,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),

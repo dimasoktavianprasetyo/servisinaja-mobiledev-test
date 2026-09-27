@@ -100,6 +100,30 @@ class GarasiPreviewList extends StatelessWidget {
                     child: Image.asset(
                       card['image']!,
                       fit: BoxFit.fill,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: isDark ? AppColors.cardDark : AppColors.cardLight,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.two_wheeler_rounded,
+                                size: 48,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                card['id'] == 'v1' ? 'Honda Vario 160' : 'Honda BeAT',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

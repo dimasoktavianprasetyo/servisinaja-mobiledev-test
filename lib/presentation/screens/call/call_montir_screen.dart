@@ -129,6 +129,16 @@ class _CallMontirScreenState extends State<CallMontirScreen> {
                               child: Image.asset(
                                 'assets/images/mechanic_avatar.png',
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: AppColors.primary,
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 54,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),

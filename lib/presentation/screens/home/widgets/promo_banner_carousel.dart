@@ -23,6 +23,7 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
       'image': 'assets/images/promo_banner.png',
       'code': 'MULTIAHASS30',
       'title': 'Spesial Booking Multi-Motor',
+      'gradient': [const Color(0xFFFF6B00), const Color(0xFFE05300)],
     },
     {
       'code': 'QRISSERVIS20',
@@ -40,6 +41,55 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Widget _buildGradientCard(Map<String, dynamic> banner) {
+    final gradientColors = (banner['gradient'] as List<Color>?) ??
+        const [AppColors.primary, AppColors.primaryDark];
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              banner['code'] as String? ?? 'PROMO',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+              ),
+            ),
+          ),
+          Text(
+            banner['title'] as String? ?? 'Promo AHASS',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const Text(
+            'Ketuk untuk salin kupon →',
+            style: TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -78,50 +128,10 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
                             banner['image'] as String,
                             fit: BoxFit.cover,
                             width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildGradientCard(banner),
                           )
-                        : Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: banner['gradient'] as List<Color>,
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            padding: const EdgeInsets.all(18),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    banner['code'] as String,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  banner['title'] as String,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const Text(
-                                  'Ketuk untuk salin kupon →',
-                                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
+                        : _buildGradientCard(banner),
                   ),
                 ),
               );
