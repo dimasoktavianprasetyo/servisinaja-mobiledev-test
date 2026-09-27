@@ -4,6 +4,7 @@ import '../../core/constants/app_typography.dart';
 
 class ServisinAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final Widget? titleWidget;
   final bool showBack;
   final List<Widget>? actions;
   final Widget? bottom;
@@ -12,6 +13,7 @@ class ServisinAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ServisinAppBar({
     super.key,
     required this.title,
+    this.titleWidget,
     this.showBack = true,
     this.actions,
     this.bottom,
@@ -37,14 +39,15 @@ class ServisinAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: () => Navigator.of(context).maybePop(),
             )
           : null,
-      title: Text(
-        title,
-        style: AppTypography.getHeading(
-          isDark: isDark,
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      title: titleWidget ??
+          Text(
+            title,
+            style: AppTypography.getHeading(
+              isDark: isDark,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
       actions: actions,
       bottom: bottom != null
           ? PreferredSize(

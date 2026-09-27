@@ -120,17 +120,15 @@ class _CallMontirScreenState extends State<CallMontirScreen> {
                             height: 110,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: const Color(0xFF1E293B),
                               border: Border.all(
                                 color: widget.isEmergency ? AppColors.emergency : AppColors.primary,
                                 width: 3,
                               ),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.engineering_rounded,
-                                size: 54,
-                                color: Colors.white,
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/images/mechanic_avatar.png',
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),

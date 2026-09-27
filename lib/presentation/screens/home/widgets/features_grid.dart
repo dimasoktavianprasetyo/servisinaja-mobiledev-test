@@ -3,7 +3,6 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../controllers/app_controller.dart';
 import '../../booking/booking_step1_screen.dart';
 import '../../call/call_montir_screen.dart';
-import '../../chat/chat_montir_screen.dart';
 
 class FeaturesGrid extends StatelessWidget {
   final AppController controller;
@@ -20,9 +19,7 @@ class FeaturesGrid extends StatelessWidget {
     final List<Map<String, dynamic>> features = [
       {
         'title': 'Booking Servis',
-        'subtitle': 'Pilih jadwal kamu',
-        'icon': Icons.calendar_month_rounded,
-        'colors': [const Color(0xFFFF6B00), const Color(0xFFE05300)],
+        'image': 'assets/images/feature_booking.png',
         'onTap': () {
           Navigator.push(
             context,
@@ -34,9 +31,7 @@ class FeaturesGrid extends StatelessWidget {
       },
       {
         'title': 'Emergency',
-        'subtitle': 'Bantuan 24 Jam',
-        'icon': Icons.warning_rounded,
-        'colors': [const Color(0xFFEF4444), const Color(0xFFDC2626)],
+        'image': 'assets/images/feature_emergency.png',
         'onTap': () {
           Navigator.push(
             context,
@@ -51,9 +46,7 @@ class FeaturesGrid extends StatelessWidget {
       },
       {
         'title': 'Home Service',
-        'subtitle': 'Servis di rumah',
-        'icon': Icons.home_repair_service_rounded,
-        'colors': [const Color(0xFF0EA5E9), const Color(0xFF0284C7)],
+        'image': 'assets/images/feature_homeservice.png',
         'onTap': () {
           Navigator.push(
             context,
@@ -62,20 +55,6 @@ class FeaturesGrid extends StatelessWidget {
                 controller: controller,
                 isHomeService: true,
               ),
-            ),
-          );
-        },
-      },
-      {
-        'title': 'Chat Montir',
-        'subtitle': 'Konsultasi gratis',
-        'icon': Icons.chat_rounded,
-        'colors': [const Color(0xFF10B981), const Color(0xFF059669)],
-        'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ChatMontirScreen(controller: controller),
             ),
           );
         },
@@ -101,8 +80,6 @@ class FeaturesGrid extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: features.map((feat) {
-              final gradient = feat['colors'] as List<Color>;
-
               return Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -110,59 +87,23 @@ class FeaturesGrid extends StatelessWidget {
                     onTap: feat['onTap'] as VoidCallback,
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                      height: 120,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: gradient,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: gradient[0].withValues(alpha: 0.3),
-                            blurRadius: 8,
+                            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                            blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              feat['icon'] as IconData,
-                              size: 22,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            feat['title'] as String,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            feat['subtitle'] as String,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 9,
-                            ),
-                          ),
-                        ],
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          feat['image'] as String,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),

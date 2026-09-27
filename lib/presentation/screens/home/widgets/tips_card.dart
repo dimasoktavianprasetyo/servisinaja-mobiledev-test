@@ -153,16 +153,17 @@ class TipsCard extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 72,
+                    height: 72,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryContainerLight,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(
-                      Icons.oil_barrel_rounded,
-                      size: 28,
-                      color: AppColors.primary,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.asset(
+                        'assets/images/tips_oil.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 14),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../controllers/app_controller.dart';
-import '../../../widgets/status_badge.dart';
 
 class GarasiPreviewList extends StatelessWidget {
   final AppController controller;
@@ -16,6 +15,11 @@ class GarasiPreviewList extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = controller.isDarkMode;
     final vehicles = controller.vehicles;
+
+    final List<Map<String, String>> figmaCards = [
+      {'id': 'v1', 'image': 'assets/images/motor_vario.png'},
+      {'id': 'v2', 'image': 'assets/images/motor_beat.png'},
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,145 +59,48 @@ class GarasiPreviewList extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 146,
+          height: 154,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
-            itemCount: vehicles.length,
+            itemCount: figmaCards.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final vehicle = vehicles[index];
+              final card = figmaCards[index];
+              final vehicle = vehicles.firstWhere(
+                (v) => v.id == card['id'],
+                orElse: () => vehicles.first,
+              );
               final isSelected = vehicle.isSelected;
 
               return InkWell(
                 onTap: () => controller.selectVehicle(vehicle.id),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  width: 280,
-                  padding: const EdgeInsets.all(14),
+                  width: 173,
+                  height: 152,
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.cardDark : AppColors.cardLight,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                      width: isSelected ? 2 : 1,
+                      color: isSelected ? AppColors.primary : Colors.transparent,
+                      width: 2.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.3)
+                            : Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          StatusBadge(
-                            text: vehicle.conditionStatus,
-                            type: vehicle.conditionStatus == 'Kondisi OK'
-                                ? BadgeType.success
-                                : BadgeType.warning,
-                            icon: Icons.check_circle_rounded,
-                          ),
-                          if (isSelected)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryContainerLight,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'Aktif',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            vehicle.name,
-                            style: AppTypography.getHeading(
-                              isDark: isDark,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            vehicle.plateNumber,
-                            style: AppTypography.getBody(
-                              isDark: isDark,
-                              fontSize: 12,
-                              isSecondary: true,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                        height: 1,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.speed_rounded,
-                                size: 12,
-                                color: isDark
-                                    ? AppColors.textSecondaryDark
-                                    : AppColors.textSecondaryLight,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${vehicle.odometerKm} km',
-                                style: AppTypography.getLabel(
-                                  isDark: isDark,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.build_circle_rounded,
-                                size: 12,
-                                color: isDark
-                                    ? AppColors.textSecondaryDark
-                                    : AppColors.textSecondaryLight,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                vehicle.lastService,
-                                style: AppTypography.getLabel(
-                                  isDark: isDark,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.asset(
+                      card['image']!,
+                      fit: BoxFit.fill,
+                    ),
                   ),
                 ),
               );

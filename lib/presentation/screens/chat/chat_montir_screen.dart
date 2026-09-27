@@ -75,7 +75,59 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
 
     return Scaffold(
       appBar: ServisinAppBar(
-        title: 'Montir Budi Santoso',
+        title: 'Budi Santoso',
+        titleWidget: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/mechanic_avatar.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Budi Santoso',
+                  style: AppTypography.getHeading(
+                    isDark: isDark,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: const BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Online • AHASS Pit Ready',
+                      style: AppTypography.getLabel(
+                        isDark: isDark,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             onPressed: () {

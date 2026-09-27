@@ -20,28 +20,19 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
 
   final List<Map<String, dynamic>> _bannerList = [
     {
-      'title': 'Spesial Booking Multi-Motor',
-      'subtitle': 'Servis 2 motor sekaligus di AHASS hemat hingga 30%',
-      'tag': 'HEMAT 30%',
+      'image': 'assets/images/promo_banner.png',
       'code': 'MULTIAHASS30',
-      'colors': [const Color(0xFFFF6B00), const Color(0xFFE05300)],
-      'icon': Icons.two_wheeler_rounded,
+      'title': 'Spesial Booking Multi-Motor',
     },
     {
-      'title': 'Cashback Ganti Oli MPX',
-      'subtitle': 'Bayar non-tunai via QRIS langsung dapat potongan 20RB',
-      'tag': 'CASHBACK 20RB',
       'code': 'QRISSERVIS20',
-      'colors': [const Color(0xFF0F172A), const Color(0xFF1E293B)],
-      'icon': Icons.local_gas_station_rounded,
+      'title': 'Cashback Ganti Oli MPX',
+      'gradient': [const Color(0xFF0F172A), const Color(0xFF1E293B)],
     },
     {
-      'title': 'Uji Emisi & Nitrogen Gratis',
-      'subtitle': 'Khusus pelanggan yang servis paket tune up lengkap',
-      'tag': 'GRATIS',
       'code': 'FREEECO26',
-      'colors': [const Color(0xFF0369A1), const Color(0xFF0284C7)],
-      'icon': Icons.eco_rounded,
+      'title': 'Uji Emisi & Nitrogen Gratis',
+      'gradient': [const Color(0xFF0369A1), const Color(0xFF0284C7)],
     },
   ];
 
@@ -58,144 +49,79 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 160,
+          height: 152,
           child: PageView.builder(
             controller: _pageController,
             itemCount: _bannerList.length,
-            onPageChanged: (index) {
-              setState(() => _currentIndex = index);
-            },
+            onPageChanged: (index) => setState(() => _currentIndex = index),
             itemBuilder: (context, index) {
               final banner = _bannerList[index];
-              final gradientColors = banner['colors'] as List<Color>;
+              final hasImage = banner['image'] != null;
 
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: gradientColors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: gradientColors[0].withValues(alpha: 0.35),
-                        blurRadius: 14,
-                        offset: const Offset(0, 6),
+                child: InkWell(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Voucher "${banner['code']}" berhasil disalin!'),
+                        duration: const Duration(seconds: 2),
+                        backgroundColor: AppColors.primary,
                       ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                banner['tag'] as String,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5,
-                                ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: hasImage
+                        ? Image.asset(
+                            banner['image'] as String,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: banner['gradient'] as List<Color>,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
                             ),
-                            Column(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    banner['code'] as String,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
                                 Text(
                                   banner['title'] as String,
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 15,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  banner['subtitle'] as String,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.85),
-                                    fontSize: 11,
-                                    height: 1.3,
-                                  ),
+                                const Text(
+                                  'Ketuk untuk salin kupon →',
+                                  style: TextStyle(color: Colors.white70, fontSize: 12),
                                 ),
                               ],
                             ),
-                            InkWell(
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Voucher ${banner['code']} berhasil disalin!'),
-                                    duration: const Duration(seconds: 2),
-                                    backgroundColor: AppColors.primary,
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text(
-                                      'Klaim Voucher',
-                                      style: TextStyle(
-                                        color: AppColors.textPrimaryLight,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.arrow_forward_rounded,
-                                      size: 12,
-                                      color: AppColors.textPrimaryLight,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        width: 76,
-                        height: 76,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          banner['icon'] as IconData,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                          ),
                   ),
                 ),
               );
