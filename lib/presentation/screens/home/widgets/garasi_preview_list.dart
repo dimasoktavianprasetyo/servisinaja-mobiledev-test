@@ -69,7 +69,7 @@ class GarasiPreviewList extends StatelessWidget {
                 onTap: () => controller.selectVehicle(vehicle.id),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  width: 250,
+                  width: 280,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.cardDark : AppColors.cardLight,
@@ -150,10 +150,11 @@ class GarasiPreviewList extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.speed_rounded,
-                                size: 13,
+                                size: 12,
                                 color: isDark
                                     ? AppColors.textSecondaryDark
                                     : AppColors.textSecondaryLight,
@@ -163,17 +164,18 @@ class GarasiPreviewList extends StatelessWidget {
                                 '${vehicle.odometerKm} km',
                                 style: AppTypography.getLabel(
                                   isDark: isDark,
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
                           ),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
                                 Icons.build_circle_rounded,
-                                size: 13,
+                                size: 12,
                                 color: isDark
                                     ? AppColors.textSecondaryDark
                                     : AppColors.textSecondaryLight,
@@ -183,7 +185,7 @@ class GarasiPreviewList extends StatelessWidget {
                                 vehicle.lastService,
                                 style: AppTypography.getLabel(
                                   isDark: isDark,
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
