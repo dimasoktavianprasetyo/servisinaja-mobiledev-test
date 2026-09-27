@@ -122,13 +122,28 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                             ],
                           ),
                         ),
-                        Radio<String>(
-                          value: v.id,
-                          groupValue: _selectedVehicle.id,
-                          activeColor: AppColors.primary,
-                          onChanged: (_) {
-                            setState(() => _selectedVehicle = v);
-                          },
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isCurrent ? AppColors.primary : (isDark ? AppColors.borderDark : const Color(0xFFCBD5E1)),
+                              width: 2,
+                            ),
+                          ),
+                          child: isCurrent
+                              ? Center(
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
                       ],
                     ),

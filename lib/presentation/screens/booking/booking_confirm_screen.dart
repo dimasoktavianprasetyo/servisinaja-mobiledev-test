@@ -158,13 +158,28 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                             ],
                           ),
                         ),
-                        Radio<String>(
-                          value: opt['title'] as String,
-                          groupValue: _paymentMethod,
-                          activeColor: AppColors.primary,
-                          onChanged: (val) {
-                            if (val != null) setState(() => _paymentMethod = val);
-                          },
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? AppColors.primary : (isDark ? AppColors.borderDark : const Color(0xFFCBD5E1)),
+                              width: 2,
+                            ),
+                          ),
+                          child: isSelected
+                              ? Center(
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
                       ],
                     ),
@@ -227,6 +242,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
             isLoading: _isProcessing,
             onPressed: () {
               setState(() => _isProcessing = true);
+              final navigator = Navigator.of(context);
               Future.delayed(const Duration(milliseconds: 1200), () {
                 if (!mounted) return;
                 widget.controller.createBooking(
@@ -235,8 +251,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                   date: widget.scheduleDate,
                   time: widget.scheduleTime,
                 );
-                Navigator.pushReplacement(
-                  context,
+                navigator.pushReplacement(
                   MaterialPageRoute(
                     builder: (_) => BookingSuccessTicketScreen(controller: widget.controller),
                   ),

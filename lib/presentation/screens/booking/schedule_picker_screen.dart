@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../data/models/vehicle_model.dart';
 import '../../../data/models/service_model.dart';
 import '../../controllers/app_controller.dart';
@@ -227,13 +226,28 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                             ),
                           ),
                         ),
-                        Radio<String>(
-                          value: ws,
-                          groupValue: _selectedWorkshop,
-                          activeColor: AppColors.primary,
-                          onChanged: (val) {
-                            if (val != null) setState(() => _selectedWorkshop = val);
-                          },
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? AppColors.primary : (isDark ? AppColors.borderDark : const Color(0xFFCBD5E1)),
+                              width: 2,
+                            ),
+                          ),
+                          child: isSelected
+                              ? Center(
+                                  child: Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
                       ],
                     ),
