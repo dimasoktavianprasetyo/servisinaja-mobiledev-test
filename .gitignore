@@ -47,3 +47,7 @@ app.*.map.json
 # Raw Figma design exports
 /light/
 /dark/
+
+# Android build cache
+.kotlin/
+/android/.kotlin/
