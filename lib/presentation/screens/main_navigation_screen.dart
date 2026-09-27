@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../controllers/app_controller.dart';
+import '../widgets/badge_percent_icon.dart';
 import 'home/home_screen.dart';
 import 'booking/booking_step1_screen.dart';
 import 'promo/promo_screen.dart';
@@ -33,9 +34,38 @@ class MainNavigationScreen extends StatelessWidget {
         ];
 
         return Scaffold(
-          body: IndexedStack(
-            index: currentIndex,
-            children: screens,
+          backgroundColor:
+              isDark ? const Color(0xFF0B1120) : const Color(0xFFFAF8F5),
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: isDark
+                  ? const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.22, 0.60, 1.0],
+                      colors: [
+                        Color(0xFF24160E), // Rich dark amber/orange top tint
+                        Color(0xFF16151E), // Soft dark drift
+                        Color(0xFF111827), // Deep slate
+                        Color(0xFF0B1120), // Rich obsidian
+                      ],
+                    )
+                  : const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.20, 0.55, 1.0],
+                      colors: [
+                        Color(0xFFFFECE0), // Soft luxurious warm orange glow
+                        Color(0xFFFFF6EE), // Silky peach transition
+                        Color(0xFFFAF7F4), // Refined warm neutral
+                        Color(0xFFF8FAFC), // Clean crisp bottom
+                      ],
+                    ),
+            ),
+            child: IndexedStack(
+              index: currentIndex,
+              children: screens,
+            ),
           ),
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
@@ -43,53 +73,69 @@ class MainNavigationScreen extends StatelessWidget {
               border: Border(
                 top: BorderSide(
                   color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  width: 1,
                 ),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                  color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
                   blurRadius: 10,
-                  offset: const Offset(0, -3),
+                  offset: const Offset(0, -2),
                 ),
               ],
             ),
             child: SafeArea(
+              top: false,
               child: SizedBox(
-                height: 64,
+                height: 60,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildNavItem(
                       index: 0,
-                      icon: Icons.home_rounded,
+                      icon: currentIndex == 0
+                          ? Icons.home_rounded
+                          : Icons.home_outlined,
                       label: 'Beranda',
                       isSelected: currentIndex == 0,
                       isDark: isDark,
                     ),
                     _buildNavItem(
                       index: 1,
-                      icon: Icons.calendar_month_rounded,
+                      icon: currentIndex == 1
+                          ? Icons.calendar_month_rounded
+                          : Icons.calendar_month_outlined,
                       label: 'Booking',
                       isSelected: currentIndex == 1,
                       isDark: isDark,
                     ),
                     _buildNavItem(
                       index: 2,
-                      icon: Icons.discount_rounded,
+                      customIcon: BadgePercentIcon(
+                        size: 24,
+                        color: currentIndex == 2
+                            ? AppColors.primary
+                            : (isDark
+                                ? AppColors.textMutedDark
+                                : const Color(0xFF64748B)),
+                      ),
                       label: 'Promo',
                       isSelected: currentIndex == 2,
                       isDark: isDark,
                     ),
                     _buildNavItem(
                       index: 3,
-                      icon: Icons.two_wheeler_rounded,
+                      icon: currentIndex == 3
+                          ? Icons.build_rounded
+                          : Icons.build_outlined,
                       label: 'Garasi',
                       isSelected: currentIndex == 3,
                       isDark: isDark,
                     ),
                     _buildNavItem(
                       index: 4,
-                      icon: Icons.person_rounded,
+                      icon: currentIndex == 4
+                          ? Icons.person_rounded
+                          : Icons.person_outline_rounded,
                       label: 'Akun',
                       isSelected: currentIndex == 4,
                       isDark: isDark,
@@ -106,45 +152,53 @@ class MainNavigationScreen extends StatelessWidget {
 
   Widget _buildNavItem({
     required int index,
-    required IconData icon,
+    IconData? icon,
+    Widget? customIcon,
     required String label,
     required bool isSelected,
     required bool isDark,
   }) {
     final activeColor = AppColors.primary;
-    final inactiveColor = isDark ? AppColors.textMutedDark : AppColors.textSecondaryLight;
+    final inactiveColor =
+        isDark ? AppColors.textMutedDark : const Color(0xFF64748B);
 
-    return InkWell(
-      onTap: () => controller.setNavIndex(index),
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryContainerLight : Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => controller.setNavIndex(index),
+          splashColor: AppColors.primary.withValues(alpha: 0.1),
+          highlightColor: Colors.transparent,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: Center(
+                  child: customIcon ??
+                      Icon(
+                        icon,
+                        size: 24,
+                        color: isSelected ? activeColor : inactiveColor,
+                      ),
+                ),
               ),
-              child: Icon(
-                icon,
-                size: 22,
-                color: isSelected ? activeColor : inactiveColor,
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isSelected ? activeColor : inactiveColor,
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  height: 1.2,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? activeColor : inactiveColor,
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

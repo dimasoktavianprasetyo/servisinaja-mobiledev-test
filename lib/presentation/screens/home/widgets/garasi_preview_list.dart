@@ -71,7 +71,6 @@ class GarasiPreviewList extends StatelessWidget {
                 (v) => v.id == card['id'],
                 orElse: () => vehicles.first,
               );
-              final isSelected = vehicle.isSelected;
 
               return InkWell(
                 onTap: () => controller.selectVehicle(vehicle.id),
@@ -81,22 +80,16 @@ class GarasiPreviewList extends StatelessWidget {
                   height: 152,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primary : Colors.transparent,
-                      width: 2.5,
-                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.3)
-                            : Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                     child: Image.asset(
                       card['image']!,
                       fit: BoxFit.fill,

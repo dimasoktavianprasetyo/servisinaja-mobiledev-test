@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../controllers/app_controller.dart';
+import '../../notification/notification_screen.dart';
 
 class HomeHeader extends StatelessWidget {
   final AppController controller;
@@ -18,12 +19,23 @@ class HomeHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: isDark
+            ? AppColors.surfaceDark.withValues(alpha: 0.88)
+            : Colors.white.withValues(alpha: 0.78),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark
+                ? AppColors.borderDark
+                : AppColors.primary.withValues(alpha: 0.12),
+            width: 1,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 10,
+            color: (isDark ? Colors.black : AppColors.primary)
+                .withValues(alpha: isDark ? 0.25 : 0.06),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
@@ -32,90 +44,115 @@ class HomeHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryContainerLight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
                       Icons.location_on_rounded,
-                      size: 16,
+                      size: 20,
                       color: AppColors.primary,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Lokasi Servis Terdekat',
-                        style: AppTypography.getLabel(
-                          isDark: isDark,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'LOKASI KAMU',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: isDark
+                                  ? AppColors.textMutedDark
+                                  : const Color(0xFF64748B),
+                            ),
+                          ),
+                          Text(
+                            'Jl. Sudirman No. 45, Jakarta',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.getLabel(
+                              isDark: isDark,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              customColor: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'AHASS Sudirman, Jakpus',
-                        style: AppTypography.getLabel(
-                          isDark: isDark,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          customColor: isDark
-                              ? AppColors.textPrimaryDark
-                              : AppColors.textPrimaryLight,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.stars_rounded,
-                          size: 14,
+                        Icon(
+                          Icons.star_rounded,
+                          size: 15,
                           color: Colors.white,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 3),
                         Text(
-                          '1.250 Poin',
-                          style: AppTypography.getLabel(
-                            isDark: isDark,
+                          '1,250 Poin',
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            customColor: Colors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    onPressed: controller.toggleTheme,
-                    style: IconButton.styleFrom(
-                      backgroundColor: isDark
-                          ? AppColors.bgDark
-                          : const Color(0xFFF1F5F9),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.cardDark
+                          : const Color(0xFFF8FAFC),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.borderDark
+                            : const Color(0xFFE2E8F0),
+                      ),
                     ),
-                    icon: Icon(
-                      isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                      size: 18,
-                      color: isDark ? const Color(0xFFFBBF24) : AppColors.textSecondaryLight,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        Icons.notifications_none_rounded,
+                        size: 20,
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                NotificationScreen(controller: controller),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -124,7 +161,7 @@ class HomeHeader extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            'Halo, Tania Anastasia 👋',
+            'Halo, Tania Anastasia',
             style: AppTypography.getHeading(
               isDark: isDark,
               fontSize: 22,

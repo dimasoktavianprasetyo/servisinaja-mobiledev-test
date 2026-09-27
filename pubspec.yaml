@@ -69,6 +69,7 @@ flutter:
     - assets/images/motor_beat.png
     - assets/images/tips_oil.png
     - assets/images/mechanic_avatar.png
+    - assets/images/Ilustrasi-ganti-oli.webp
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
