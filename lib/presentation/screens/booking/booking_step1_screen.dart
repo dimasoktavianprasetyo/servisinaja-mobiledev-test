@@ -2391,6 +2391,8 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                           vehicle: vehicle,
                           service: service,
                           isHomeService: widget.isHomeService,
+                          totalPrice: _totalPrice,
+                          vehicles: _vehicles,
                         ),
                       ),
                     );
