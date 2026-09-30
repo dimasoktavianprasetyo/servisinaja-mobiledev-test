@@ -17,6 +17,7 @@ class TipsDetailModal extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      enableDrag: false,
       builder: (_) => TipsDetailModal(controller: controller),
     );
   }
@@ -29,6 +30,15 @@ class _TipsDetailModalState extends State<TipsDetailModal> {
   final ScrollController _scrollController = ScrollController();
   double _dragOffset = 0.0;
   bool _isDragging = false;
+  bool _isPopping = false;
+
+  void _safePop() {
+    if (_isPopping || !mounted) return;
+    _isPopping = true;
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
 
   int _selectedOilCondition = 1; // Default to "Cokelat Kehitaman"
   int _selectedMotorcycle = 0; // Default to Vario
@@ -162,7 +172,7 @@ class _TipsDetailModalState extends State<TipsDetailModal> {
                   } else if (notification is ScrollEndNotification) {
                     setState(() => _isDragging = false);
                     if (_dragOffset > 75) {
-                      Navigator.pop(context);
+                      _safePop();
                     } else if (_dragOffset > 0) {
                       setState(() => _dragOffset = 0.0);
                     }
@@ -196,7 +206,7 @@ class _TipsDetailModalState extends State<TipsDetailModal> {
                         if (_dragOffset > 75 ||
                             (details.primaryVelocity != null &&
                                 details.primaryVelocity! > 250)) {
-                          Navigator.pop(context);
+                          _safePop();
                         } else {
                           setState(() => _dragOffset = 0.0);
                         }
@@ -342,7 +352,7 @@ class _TipsDetailModalState extends State<TipsDetailModal> {
           top: 22,
           right: 16,
           child: InkWell(
-            onTap: () => Navigator.pop(context),
+            onTap: _safePop,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               width: 36,
@@ -867,12 +877,14 @@ class _TipsDetailModalState extends State<TipsDetailModal> {
               const Icon(Icons.auto_awesome_rounded,
                   color: Color(0xFFEAB308), size: 18),
               const SizedBox(width: 8),
-              Text(
-                'Aturan Emas: Rasio 2 : 1 Penggantian Oli',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+              Expanded(
+                child: Text(
+                  'Aturan Emas: Rasio 2 : 1 Penggantian Oli',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],
@@ -1331,7 +1343,7 @@ class _TipsDetailModalState extends State<TipsDetailModal> {
                 ),
               ),
               onPressed: () {
-                Navigator.pop(context);
+                _safePop();
                 Navigator.push(
                   context,
                   MaterialPageRoute(

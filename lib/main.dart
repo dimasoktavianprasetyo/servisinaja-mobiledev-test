@@ -1,3 +1,5 @@
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/controllers/app_controller.dart';
@@ -5,7 +7,12 @@ import 'presentation/screens/main_navigation_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ServisinAjaApp());
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (context) => const ServisinAjaApp(),
+    ),
+  );
 }
 
 class ServisinAjaApp extends StatefulWidget {
@@ -30,6 +37,9 @@ class _ServisinAjaAppState extends State<ServisinAjaApp> {
       listenable: _appController,
       builder: (context, _) {
         return MaterialApp(
+          useInheritedMediaQuery: true,
+          locale: DevicePreview.locale(context),
+          builder: DevicePreview.appBuilder,
           title: 'ServisinAja',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
