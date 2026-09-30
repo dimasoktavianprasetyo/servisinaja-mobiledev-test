@@ -1744,13 +1744,14 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
               height: 72,
               child: ListView(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   ...List.generate(_vehicles.length, (i) {
                     final v = _vehicles[i];
                     final isSelected = _selectedVehicleIndex == i;
-                    // Tombol sampah merah selalu muncul saat pilihan motor diklik/terpilih atau di-swipe
-                    final isDeleteOpen = isSelected || _swipedDeleteIndex == i;
+                    // Tombol sampah merah selalu muncul saat motor dipilih / diklik
+                    final isDeleteOpen = isSelected;
 
                     return Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2480,37 +2481,9 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
   }) {
     const primaryColor = Color(0xFFF97316);
 
-    return GestureDetector(
-      onHorizontalDragUpdate: (details) {
-        // Drag to the left opens delete box
-        if (details.delta.dx < -4) {
-          if (_swipedDeleteIndex != index) {
-            setState(() => _swipedDeleteIndex = index);
-          }
-        } else if (details.delta.dx > 4) {
-          // Drag to the right closes delete box
-          if (_swipedDeleteIndex == index) {
-            setState(() => _swipedDeleteIndex = null);
-          }
-        }
-      },
-      onHorizontalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        if (velocity < -80) {
-          setState(() => _swipedDeleteIndex = index);
-        } else if (velocity > 80) {
-          setState(() => _swipedDeleteIndex = null);
-        }
-      },
-      onLongPress: () {
-        // Long-press alternative for desktop/trackpad
-        setState(() {
-          _swipedDeleteIndex = (_swipedDeleteIndex == index) ? null : index;
-        });
-      },
-      child: InkWell(
-        onTap: () => _switchVehicle(index),
-        borderRadius: BorderRadius.circular(16),
+    return InkWell(
+      onTap: () => _switchVehicle(index),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         width: 145,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -2606,9 +2579,8 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
           ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // Clickable Add Unit Card with Custom Dashed Border
   Widget _buildAddUnitCard(bool isDark) {
