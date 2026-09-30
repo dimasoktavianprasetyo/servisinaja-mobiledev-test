@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../controllers/app_controller.dart';
@@ -139,16 +139,23 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
     if (imagePath == null) return _buildGradientCard(banner);
 
     final fileName = imagePath.split('/').last;
-    final localFile = File('/sdcard/Download/servisin_banners/$fileName');
     final githubRawUrl =
         'https://raw.githubusercontent.com/dimasoktavianprasetyo/servisinaja-mobiledev-test/dev/assets/images/$fileName';
 
     final gradientColors = (banner['gradient'] as List<Color>?) ??
         const [Color(0xFF1E293B), Color(0xFF0F172A)];
 
+    File? localFile;
+    if (!kIsWeb) {
+      final f = File('/sdcard/Download/servisin_banners/$fileName');
+      if (f.existsSync()) {
+        localFile = f;
+      }
+    }
+
     // Foreground image widget that preserves aspect ratio (never cut off)
     Widget buildForegroundImage() {
-      if (localFile.existsSync()) {
+      if (localFile != null) {
         return Image.file(
           localFile,
           fit: BoxFit.contain,
@@ -161,7 +168,7 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
 
     // Ambient blurred background layer so edges blend perfectly for any aspect ratio
     Widget buildBlurredBackground() {
-      if (localFile.existsSync()) {
+      if (localFile != null) {
         return Image.file(
           localFile,
           fit: BoxFit.cover,
