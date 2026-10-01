@@ -41,14 +41,54 @@ class BookingConfirmScreen extends StatefulWidget {
 class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
   bool _isProcessing = false;
 
-  // Breakdown values matching Figma mockup (or dynamically computed)
-  final int _serviceFee = 145000;
-  final int _sparepartFee = 110000;
-  final int _appFee = 2000;
-  final int _discountVoucher = 25000;
+  // Dynamic breakdown values based on widget.vehicles
+  int get _serviceFee {
+    if (widget.vehicles != null && widget.vehicles!.isNotEmpty) {
+      const pkgPrices = [85000, 60000, 75000];
+      int total = 0;
+      for (final v in widget.vehicles!) {
+        final idx = (v['selectedPackageIndex'] as int?) ?? 0;
+        if (idx >= 0 && idx < pkgPrices.length) {
+          total += pkgPrices[idx];
+        } else {
+          total += 85000;
+        }
+      }
+      return total;
+    }
+    return 145000;
+  }
 
-  int get _calculatedTotal =>
-      widget.totalPrice ?? (_serviceFee + _sparepartFee + _appFee - _discountVoucher);
+  int get _sparepartFee {
+    if (widget.vehicles != null && widget.vehicles!.isNotEmpty) {
+      int total = 0;
+      for (final v in widget.vehicles!) {
+        final parts = (v['parts'] as List<dynamic>?) ?? [];
+        final selectedParts = (v['selectedParts'] as Iterable<dynamic>?) ?? [];
+        for (final pIdx in selectedParts) {
+          if (pIdx is int && pIdx >= 0 && pIdx < parts.length) {
+            final p = parts[pIdx];
+            if (p is Map) {
+              total += (p['price'] as int?) ?? 0;
+            }
+          }
+        }
+      }
+      return total;
+    }
+    return 110000;
+  }
+
+  int get _appFee => 2000;
+
+  int get _discountVoucher {
+    if (widget.vehicles != null && widget.vehicles!.length <= 1) {
+      return 0;
+    }
+    return 25000;
+  }
+
+  int get _calculatedTotal => _serviceFee + _sparepartFee + _appFee - _discountVoucher;
 
   String _formatCurrency(int? amount) {
     if (amount == null) return 'Rp 0';
@@ -105,13 +145,11 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
 
-      final veh = widget.vehicle ??
-          widget.controller.selectedVehicle ??
-          (widget.controller.vehicles.isNotEmpty ? widget.controller.vehicles.first : null);
+      final veh = widget.vehicle ?? widget.controller.selectedVehicle;
       final srv = widget.service ??
           (widget.controller.services.isNotEmpty ? widget.controller.services.first : null);
 
-      if (veh != null && srv != null) {
+      if (srv != null) {
         widget.controller.createBooking(
           vehicle: veh,
           service: srv,
@@ -123,7 +161,19 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => BookingSuccessTicketScreen(controller: widget.controller),
+          builder: (_) => BookingSuccessTicketScreen(
+            controller: widget.controller,
+            bookingCode: 'SRV-2026-MULTI09',
+            workshopName: widget.workshopName,
+            workshopDistance: widget.workshopDistance,
+            scheduleDateTimeStr: 'Kamis, 26 Sep 2026 • ${widget.scheduleTime}',
+            totalPrice: _calculatedTotal,
+            serviceFee: _serviceFee,
+            sparepartFee: _sparepartFee,
+            appFee: _appFee,
+            discountVoucher: _discountVoucher,
+            vehicles: widget.vehicles,
+          ),
         ),
       );
     });
