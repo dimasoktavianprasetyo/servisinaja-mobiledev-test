@@ -432,25 +432,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: Row(
                     children: [
-                      // Tania Avatar with verified badge
-                      Container(
-                        width: 62,
-                        height: 62,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/tania_avatar.png',
-                            width: 62,
-                            height: 62,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) {
-                              return const Center(
-                                child: Icon(Icons.person, size: 36, color: AppColors.primary),
-                              );
-                            },
+                      // Tania Avatar with verified badge (1:1 from Figma, unclipped, zero 404)
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: Image.asset(
+                          'assets/images/tania_avatar.png',
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.contain,
+                          errorBuilder: (ctx, err, stack) => const Center(
+                            child: Icon(Icons.person, size: 36, color: AppColors.primary),
                           ),
                         ),
                       ),

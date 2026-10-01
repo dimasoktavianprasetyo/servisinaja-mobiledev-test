@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
@@ -36,8 +37,82 @@ class BookingSuccessTicketScreen extends StatefulWidget {
   State<BookingSuccessTicketScreen> createState() => _BookingSuccessTicketScreenState();
 }
 
-class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen> {
+class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
+    with TickerProviderStateMixin {
   static const Color primaryColor = Color(0xFFF97316);
+
+  AnimationController? _entranceController;
+  AnimationController? _orbitController;
+  Animation<double>? _scaleAnimation;
+  Animation<double>? _checkAnimation;
+  Animation<double>? _rippleAnimation;
+  Animation<double>? _rippleFade;
+
+  void _ensureControllersInitialized() {
+    if (_entranceController != null) return;
+
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    );
+
+    _scaleAnimation = CurvedAnimation(
+      parent: _entranceController!,
+      curve: const Interval(0.0, 0.55, curve: Curves.elasticOut),
+    );
+
+    _checkAnimation = CurvedAnimation(
+      parent: _entranceController!,
+      curve: const Interval(0.35, 0.85, curve: Curves.easeOutCubic),
+    );
+
+    _rippleAnimation = Tween<double>(begin: 0.85, end: 1.55).animate(
+      CurvedAnimation(
+        parent: _entranceController!,
+        curve: const Interval(0.15, 0.80, curve: Curves.easeOutQuad),
+      ),
+    );
+
+    _rippleFade = Tween<double>(begin: 0.9, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _entranceController!,
+        curve: const Interval(0.35, 0.90, curve: Curves.easeOut),
+      ),
+    );
+
+    _orbitController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    );
+
+    _entranceController!.forward().then((_) {
+      if (mounted && _orbitController != null) {
+        _orbitController!.repeat();
+      }
+    });
+
+    HapticFeedback.mediumImpact();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ensureControllersInitialized();
+  }
+
+  @override
+  void dispose() {
+    _entranceController?.dispose();
+    _orbitController?.dispose();
+    super.dispose();
+  }
+
+  void _retriggerCelebration() {
+    _ensureControllersInitialized();
+    HapticFeedback.mediumImpact();
+    _entranceController?.reset();
+    _entranceController?.forward();
+  }
 
   String get _bookingCode => widget.bookingCode ?? 'SRV-2026-MULTI09';
   String get _workshopName => widget.workshopName ?? 'AHASS Servisin Mitra Cihampelas';
@@ -459,6 +534,7 @@ class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
 
   @override
   Widget build(BuildContext context) {
+    _ensureControllersInitialized();
     final isDark = widget.controller.isDarkMode;
 
     return Scaffold(
@@ -710,112 +786,222 @@ class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
   }
 
   Widget _buildCelebrationBadge() {
-    return SizedBox(
-      width: 86,
-      height: 86,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Confetti Particle Dots
-          // Top-left orange dot
-          const Positioned(
-            top: 6,
-            left: 14,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Color(0xFFF97316), shape: BoxShape.circle),
-              child: SizedBox(width: 7, height: 7),
-            ),
-          ),
-          // Top-right yellow dot
-          const Positioned(
-            top: 10,
-            right: 12,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Color(0xFFFBBF24), shape: BoxShape.circle),
-              child: SizedBox(width: 8, height: 8),
-            ),
-          ),
-          // Mid-left cyan dot
-          const Positioned(
-            top: 38,
-            left: 4,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Color(0xFF06B6D4), shape: BoxShape.circle),
-              child: SizedBox(width: 6, height: 6),
-            ),
-          ),
-          // Mid-right cyan/blue dot
-          const Positioned(
-            top: 40,
-            right: 4,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Color(0xFF0EA5E9), shape: BoxShape.circle),
-              child: SizedBox(width: 7, height: 7),
-            ),
-          ),
-          // Bottom-left green dot
-          const Positioned(
-            bottom: 8,
-            left: 18,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
-              child: SizedBox(width: 6, height: 6),
-            ),
-          ),
-          // Bottom-right orange dot
-          const Positioned(
-            bottom: 12,
-            right: 16,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Color(0xFFFB923C), shape: BoxShape.circle),
-              child: SizedBox(width: 6, height: 6),
-            ),
-          ),
+    _ensureControllersInitialized();
+    if (_entranceController == null) {
+      return const SizedBox(width: 100, height: 100);
+    }
 
-          // Outer Mint Glowing Ring
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: const Color(0xFFDCFCE7),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFFBBF7D0).withValues(alpha: 0.7),
-                width: 3.5,
-              ),
+    return GestureDetector(
+      onTap: _retriggerCelebration,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 100,
+        height: 100,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // 1. Expanding Ripple Wave Ring on entrance
+            AnimatedBuilder(
+              animation: _entranceController!,
+              builder: (context, _) {
+                final fade = _rippleFade?.value ?? 0.0;
+                final scale = _rippleAnimation?.value ?? 1.0;
+                if (fade <= 0.01) return const SizedBox.shrink();
+                return Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF10B981).withValues(alpha: fade),
+                        width: 3.0,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
 
-          // Inner Vibrant Green Disc with Checkmark
-          Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF10B981),
-                  Color(0xFF059669),
-                ],
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x3310B981),
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
+            // 2. Smooth Rotating Confetti Orbit Particles
+            RotationTransition(
+              turns: _orbitController!,
+              child: SizedBox(
+                width: 96,
+                height: 96,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Dot 1: Top-Left Orange
+                    Transform.translate(
+                      offset: const Offset(-27, -29),
+                      child: Container(
+                        width: 7.5,
+                        height: 7.5,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF97316),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Color(0x66F97316), blurRadius: 5),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Dot 2: Top-Right Amber Yellow
+                    Transform.translate(
+                      offset: const Offset(28, -26),
+                      child: Container(
+                        width: 8.5,
+                        height: 8.5,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFBBF24),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Color(0x66FBBF24), blurRadius: 5),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Dot 3: Mid-Left Cyan
+                    Transform.translate(
+                      offset: const Offset(-38, 2),
+                      child: Container(
+                        width: 6.5,
+                        height: 6.5,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF06B6D4),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Color(0x6606B6D4), blurRadius: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Dot 4: Mid-Right Light Blue
+                    Transform.translate(
+                      offset: const Offset(37, 3),
+                      child: Container(
+                        width: 7.5,
+                        height: 7.5,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF0EA5E9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Color(0x660EA5E9), blurRadius: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Dot 5: Bottom-Left Emerald Green
+                    Transform.translate(
+                      offset: const Offset(-25, 29),
+                      child: Container(
+                        width: 6.5,
+                        height: 6.5,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Color(0x6610B981), blurRadius: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Dot 6: Bottom-Right Coral Orange
+                    Transform.translate(
+                      offset: const Offset(26, 28),
+                      child: Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFB923C),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Color(0x66FB923C), blurRadius: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.check_rounded,
-              color: Colors.white,
-              size: 32,
+
+            // 3. Outer Mint Glowing Ring with gentle idle breath
+            AnimatedBuilder(
+              animation: _orbitController!,
+              builder: (context, _) {
+                final orbitVal = _orbitController?.value ?? 0.0;
+                final pulse = 1.0 + 0.03 * math.sin(orbitVal * 2 * math.pi);
+                return Transform.scale(
+                  scale: pulse,
+                  child: Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCFCE7),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFBBF7D0).withValues(alpha: 0.85),
+                        width: 3.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.22),
+                          blurRadius: 14,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
-        ],
+
+            // 4. Elastic Entrance & Center Green Disc with Smooth Animated Drawn Checkmark
+            ScaleTransition(
+              scale: _scaleAnimation!,
+              child: Container(
+                width: 52,
+                height: 52,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF10B981),
+                      Color(0xFF059669),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x4410B981),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: AnimatedBuilder(
+                  animation: _checkAnimation!,
+                  builder: (context, _) {
+                    final progress = _checkAnimation?.value ?? 1.0;
+                    return CustomPaint(
+                      size: const Size(32, 32),
+                      painter: _AnimatedCheckmarkPainter(
+                        progress: progress,
+                        color: Colors.white,
+                        strokeWidth: 3.6,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1970,3 +2156,58 @@ class _TicketQrPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+class _AnimatedCheckmarkPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final double strokeWidth;
+
+  _AnimatedCheckmarkPainter({
+    required this.progress,
+    required this.color,
+    this.strokeWidth = 3.6,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0.0) return;
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = strokeWidth;
+
+    // Checkmark anchor coordinates matching iOS / Material checkmark ratio
+    final p1 = Offset(size.width * 0.28, size.height * 0.52);
+    final p2 = Offset(size.width * 0.44, size.height * 0.69);
+    final p3 = Offset(size.width * 0.74, size.height * 0.35);
+
+    final path = Path();
+    path.moveTo(p1.dx, p1.dy);
+
+    final d1 = (p2 - p1).distance;
+    final d2 = (p3 - p2).distance;
+    final total = d1 + d2;
+    final cur = total * progress;
+
+    if (cur <= d1) {
+      final t = cur / d1;
+      final pt = Offset.lerp(p1, p2, t)!;
+      path.lineTo(pt.dx, pt.dy);
+    } else {
+      path.lineTo(p2.dx, p2.dy);
+      final t = (cur - d1) / d2;
+      final pt = Offset.lerp(p2, p3, t)!;
+      path.lineTo(pt.dx, pt.dy);
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_AnimatedCheckmarkPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
+}
+
