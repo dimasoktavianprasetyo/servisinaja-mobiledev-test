@@ -53,3 +53,4 @@ app.*.map.json
 /android/.kotlin/
 scratch/
 penugasan.pdf
+*.apk
