@@ -180,7 +180,8 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
 
   int get _finalPrice => widget.totalPrice ?? 285000;
 
-  String _formatCurrency(int amount) {
+  String _formatCurrency(int? amount) {
+    if (amount == null) return 'Rp 0';
     final str = amount.toString();
     final buffer = StringBuffer();
     int count = 0;
@@ -1255,7 +1256,8 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                   ),
                   onPressed: () {
                     final datePart = _dateSlots[_selectedDateIndex];
-                    final parsedDate = DateTime(2024, 9, int.parse(datePart['date'] as String));
+                    final dateDay = int.tryParse(datePart['date']?.toString() ?? '26') ?? 26;
+                    final parsedDate = DateTime(2024, 9, dateDay);
 
                     Navigator.push(
                       context,
@@ -1267,6 +1269,12 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                           scheduleDate: parsedDate,
                           scheduleTime: '$selectedTimeStr WIB',
                           workshopName: _selectedWorkshop,
+                          workshopDistance: _selectedDistance,
+                          armadaOption: _selectedArmadaOption == 0
+                              ? 'Pengerjaan Bersamaan: 2 Pit Dipesan Sekaligus'
+                              : 'Pengerjaan Bergantian: Cocok jika bawa motor sendiri',
+                          totalPrice: _finalPrice,
+                          vehicles: widget.vehicles,
                         ),
                       ),
                     );
