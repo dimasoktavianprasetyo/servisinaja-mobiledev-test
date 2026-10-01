@@ -67,7 +67,9 @@ class MainNavigationScreen extends StatelessWidget {
               children: screens,
             ),
           ),
-          bottomNavigationBar: Container(
+          bottomNavigationBar: currentIndex == 1
+              ? const SizedBox.shrink()
+              : Container(
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark : Colors.white,
               border: Border(

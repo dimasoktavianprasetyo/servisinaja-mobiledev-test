@@ -1688,25 +1688,38 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
     );
   }
 
+  void _handleBack() {
+    widget.controller.setNavIndex(0);
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = widget.controller.isDarkMode;
     const primaryColor = Color(0xFFF97316);
     final currentOdo = _vehicles[_selectedVehicleIndex]['odometer'] as int;
 
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.bgDark : const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: isDark ? Colors.white : const Color(0xFF0F172A),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: isDark ? AppColors.bgDark : const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_rounded,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
+            onPressed: _handleBack,
           ),
-          onPressed: () => Navigator.pop(context),
-        ),
         titleSpacing: 0,
         title: Text(
           'Booking Servis',
@@ -1741,11 +1754,12 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
 
             // 2. Unit Selection Cards Row (Swipe to Reveal Red Delete Button)
             SizedBox(
-              height: 72,
+              height: 84,
               child: ListView(
                 scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
                 physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 children: [
                   ...List.generate(_vehicles.length, (i) {
                     final v = _vehicles[i];
@@ -1760,7 +1774,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                           padding: const EdgeInsets.only(right: 10),
                           child: _buildVehicleCard(
                             index: i,
-                            title: 'Motor :',
+                            title: 'Motor ${i + 1}:',
                             name: v['shortName'] as String,
                             isSelected: isSelected,
                             badgeText: (v['isComplete'] as bool? ?? true) ? 'Terpilih' : 'Belum Lengkap',
@@ -1771,19 +1785,19 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
                           curve: Curves.easeOutCubic,
-                          width: isDeleteOpen ? 72 : 0,
+                          width: isDeleteOpen ? 60 : 0,
                           height: 72,
-                          margin: EdgeInsets.only(right: isDeleteOpen ? 10 : 0),
+                          margin: EdgeInsets.only(right: isDeleteOpen ? 8 : 0),
                           child: isDeleteOpen
                               ? InkWell(
                                   onTap: () => _deleteVehicle(i),
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(14),
                                   child: Container(
-                                    width: 72,
+                                    width: 54,
                                     height: 72,
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFEF4444),
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(14),
                                       boxShadow: [
                                         BoxShadow(
                                           color: const Color(0xFFEF4444).withValues(alpha: 0.35),
@@ -1796,7 +1810,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                     child: const Icon(
                                       Icons.delete_outline_rounded,
                                       color: Colors.white,
-                                      size: 26,
+                                      size: 30,
                                     ),
                                   ),
                                 )
@@ -2325,7 +2339,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
 
       // 4. Sticky Bottom Summary Bar
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : Colors.white,
           border: Border(
@@ -2343,6 +2357,8 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
           ],
         ),
         child: SafeArea(
+          top: false,
+          bottom: false,
           child: Row(
             children: [
               Column(
@@ -2424,8 +2440,9 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStepItem(int stepNumber, String title, {required bool isActive, required bool isDark}) {
     const activeColor = Color(0xFFF97316);

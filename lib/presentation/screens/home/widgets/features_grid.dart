@@ -22,12 +22,7 @@ class FeaturesGrid extends StatelessWidget {
         'title': 'Booking Servis',
         'image': 'assets/images/feature_booking.png',
         'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BookingStep1Screen(controller: controller),
-            ),
-          );
+          controller.setNavIndex(1);
         },
       },
       {

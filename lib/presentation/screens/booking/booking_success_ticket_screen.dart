@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../controllers/app_controller.dart';
-import '../chat/chat_montir_screen.dart';
+import '../status/status_servis_screen.dart';
 
 class BookingSuccessTicketScreen extends StatefulWidget {
   final AppController controller;
@@ -446,7 +446,13 @@ class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ChatMontirScreen(controller: widget.controller),
+        builder: (_) => StatusServisScreen(
+          controller: widget.controller,
+          bookingCode: _bookingCode,
+          workshopName: _workshopName,
+          vehicles: widget.vehicles,
+          fromTicketScreen: true,
+        ),
       ),
     );
   }
@@ -574,7 +580,7 @@ class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
 
       // Sticky Bottom Navigation Bar
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : Colors.white,
           border: Border(
@@ -592,6 +598,8 @@ class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
           ],
         ),
         child: SafeArea(
+          top: false,
+          bottom: false,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

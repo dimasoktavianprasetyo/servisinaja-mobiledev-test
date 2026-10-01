@@ -76,6 +76,11 @@ flutter:
     - assets/images/96cb9d2c-d0cc-4ff7-91a9-49e6647fc64d.jpg
     - assets/images/a2464b49-efe3-488d-9cee-02ee949a84f8.jpg
     - assets/images/bd9efcf0-9b56-46fb-aa14-0c95266d3f51.jpeg
+    - assets/images/ongoing_service_illustration.jpg
+    - assets/images/cvt_roller_inspection.png
+    - assets/images/kampas_rem_inspection.jpg
+    - assets/images/kang_agus.png
+    - assets/images/kang_asep.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

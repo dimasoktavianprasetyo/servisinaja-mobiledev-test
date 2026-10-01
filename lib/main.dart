@@ -38,7 +38,6 @@ class _ServisinAjaAppState extends State<ServisinAjaApp> {
       listenable: _appController,
       builder: (context, _) {
         return MaterialApp(
-          useInheritedMediaQuery: true,
           locale: DevicePreview.locale(context),
           builder: DevicePreview.appBuilder,
           title: 'ServisinAja',

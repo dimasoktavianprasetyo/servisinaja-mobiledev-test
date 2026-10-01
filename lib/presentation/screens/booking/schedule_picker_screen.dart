@@ -847,10 +847,12 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
 
                   // Horizontal Date Cards (Sen 23 ... Kam 26 ... Min 29)
                   SizedBox(
-                    height: 68,
+                    height: 80,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
+                      clipBehavior: Clip.none,
                       physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(vertical: 6),
                       itemCount: _dateSlots.length,
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (context, idx) {
@@ -1186,7 +1188,7 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
 
       // Sticky Bottom Bar
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : Colors.white,
           border: Border(
@@ -1204,6 +1206,8 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
           ],
         ),
         child: SafeArea(
+          top: false,
+          bottom: false,
           child: Row(
             children: [
               // Left: Info & Price

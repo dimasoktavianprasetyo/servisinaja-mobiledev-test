@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../controllers/app_controller.dart';
+import '../status/status_servis_screen.dart';
 
 class NotificationItem {
   final String id;
@@ -55,6 +56,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
   void initState() {
     super.initState();
     _notifications = [
+      NotificationItem(
+        id: 'n0',
+        title: 'Servis Multi-Motor (2 Unit) Sedang Berlangsung',
+        body:
+            'Motor Vario 160 & BeAT sedang dikerjakan di Pit 01 & 02 AHASS Cihampelas. Ketuk untuk pantau status live armada.',
+        time: 'Baru saja',
+        icon: Icons.settings_outlined,
+        category: 'status',
+        section: 'HARI INI',
+        highlightTag: 'Pit 01 & 02',
+        badgeText: 'Sedang Berlangsung',
+        badgeBg: const Color(0xFFFFF3ED),
+        badgeTextColor: const Color(0xFFEA580C),
+        isRead: false,
+      ),
       NotificationItem(
         id: 'n1',
         title: 'Booking Multi-Motor Dikonfirmasi!',
@@ -331,6 +347,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return InkWell(
       onTap: () {
         setState(() => item.isRead = true);
+        if (item.category == 'status') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StatusServisScreen(controller: widget.controller),
+            ),
+          );
+        }
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -415,25 +439,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   const SizedBox(height: 8),
 
                   // Footer info
-                  Row(
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 4,
+                    runSpacing: 4,
                     children: [
-                      const Icon(
-                        Icons.access_time_rounded,
-                        size: 13,
-                        color: Color(0xFF94A3B8),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.time,
-                        style: const TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.access_time_rounded,
+                            size: 13,
+                            color: Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.time,
+                            style: const TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                       if (item.highlightTag != null) ...[
                         const Text(
-                          '  •  ',
+                          '•',
                           style: TextStyle(
                             color: Color(0xFF94A3B8),
                             fontSize: 11,
@@ -450,7 +482,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ],
                       if (item.badgeText != null) ...[
                         const Text(
-                          '  •  ',
+                          '•',
                           style: TextStyle(
                             color: Color(0xFF94A3B8),
                             fontSize: 11,

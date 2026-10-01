@@ -330,7 +330,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
 
       // Sticky Bottom Navigation Bar
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : Colors.white,
           border: Border(
@@ -348,6 +348,8 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
           ],
         ),
         child: SafeArea(
+          top: false,
+          bottom: false,
           child: Row(
             children: [
               // Left: Total Label & Price
