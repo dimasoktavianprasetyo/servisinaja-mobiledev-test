@@ -37,6 +37,88 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
   String _selectedDistance = '1.2 km';
   double _selectedRating = 4.9;
   String _selectedReviewCount = '1.2rb';
+  int _selectedPits = 4;
+  bool _selectedIsOfficial = true;
+  bool _selectedHasWifi = true;
+
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  List<Map<String, dynamic>> _filteredWorkshops = [];
+  bool _isSearchActive = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredWorkshops = _workshopList;
+    _searchFocusNode.addListener(() {
+      setState(() {
+        _isSearchActive = _searchFocusNode.hasFocus;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      if (query.trim().isEmpty) {
+        _filteredWorkshops = _workshopList;
+      } else {
+        final q = query.toLowerCase();
+        _filteredWorkshops = _workshopList.where((ws) {
+          final name = (ws['name'] as String).toLowerCase();
+          final dist = (ws['distance'] as String).toLowerCase();
+          return name.contains(q) || dist.contains(q);
+        }).toList();
+      }
+    });
+  }
+
+  void _selectWorkshop(Map<String, dynamic> ws) {
+    setState(() {
+      _selectedWorkshop = ws['name'] as String;
+      _selectedDistance = ws['distance'] as String;
+      _selectedRating = (ws['rating'] as num).toDouble();
+      _selectedReviewCount = ws['reviews'] as String;
+      _selectedPits = (ws['pits'] as num).toInt();
+      _selectedIsOfficial = (ws['isOfficial'] as bool?) ?? true;
+      _selectedHasWifi = (ws['hasWifi'] as bool?) ?? true;
+      _searchController.text = ws['name'] as String;
+      _isSearchActive = false;
+    });
+    _searchFocusNode.unfocus();
+  }
+
+  void _onGpsTap() {
+    final nearest = _workshopList.first;
+    _selectWorkshop(nearest);
+    _searchController.clear();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.gps_fixed_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Terhubung bengkel terdekat: ${nearest['name']} (${nearest['distance']})',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFFF97316),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   final List<Map<String, dynamic>> _dateSlots = [
     {'day': 'Sen', 'date': '23', 'fullDate': 'Senin, 23 Sep'},
@@ -182,12 +264,7 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: InkWell(
                   onTap: () {
-                    setState(() {
-                      _selectedWorkshop = ws['name'] as String;
-                      _selectedDistance = ws['distance'] as String;
-                      _selectedRating = (ws['rating'] as num).toDouble();
-                      _selectedReviewCount = ws['reviews'] as String;
-                    });
+                    _selectWorkshop(ws);
                     Navigator.pop(ctx);
                   },
                   borderRadius: BorderRadius.circular(16),
@@ -355,43 +432,154 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Search Bar with Location Pin Button
-                  InkWell(
-                    onTap: () => _showChangeWorkshopSheet(isDark),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      height: 44,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.surfaceDark : Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
-                          width: 1.0,
-                        ),
+                  // Interactive Search Input Field (Matching Figma Pill Design)
+                  Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surfaceDark : Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: _isSearchActive
+                            ? primaryColor
+                            : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0)),
+                        width: _isSearchActive ? 1.5 : 1.0,
                       ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Cari bengkel terdekat...',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                color: Color(0xFF94A3B8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      onChanged: _onSearchChanged,
+                      textInputAction: TextInputAction.search,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xFF94A3B8),
+                          size: 20,
+                        ),
+                        hintText: 'Cari bengkel terdekat...',
+                        hintStyle: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF94A3B8),
+                          fontWeight: FontWeight.w400,
+                        ),
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_searchController.text.isNotEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  _searchController.clear();
+                                  _onSearchChanged('');
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 6),
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    size: 16,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ),
+                            // GPS Target Button (Locate nearest workshop)
+                            InkWell(
+                              onTap: _onGpsTap,
+                              borderRadius: BorderRadius.circular(20),
+                              child: const Padding(
+                                padding: EdgeInsets.only(right: 12, left: 4),
+                                child: Icon(
+                                  Icons.gps_fixed_rounded,
+                                  color: Color(0xFFF97316),
+                                  size: 20,
+                                ),
                               ),
                             ),
-                          ),
-                          Icon(
-                            Icons.my_location_rounded,
-                            color: primaryColor,
-                            size: 18,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
+
+                  // Live Search Results Dropdown
+                  if (_isSearchActive && _searchController.text.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.surfaceDark : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: _filteredWorkshops.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.all(14),
+                              child: Center(
+                                child: Text(
+                                  'Bengkel tidak ditemukan',
+                                  style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                                ),
+                              ),
+                            )
+                          : Column(
+                              children: _filteredWorkshops.map((ws) {
+                                return InkWell(
+                                  onTap: () => _selectWorkshop(ws),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.storefront_rounded, color: primaryColor, size: 18),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                ws['name'] as String,
+                                                style: TextStyle(
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                                ),
+                                              ),
+                                              Text(
+                                                '${ws['distance']} • ⭐ ${ws['rating']} (${ws['reviews']}) • ${ws['pits']} Pit',
+                                                style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF94A3B8)),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                    ),
 
                   const SizedBox(height: 12),
 
@@ -465,38 +653,42 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                                 color: Color(0xFF64748B),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFDCFCE7),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'Bengkel Resmi',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF16A34A),
+                            if (_selectedIsOfficial) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'Bengkel Resmi',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF16A34A),
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE0F2FE),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'AC & Free WiFi',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF0284C7),
+                            ],
+                            if (_selectedHasWifi) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE0F2FE),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'AC & Free WiFi',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0284C7),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
 
@@ -520,7 +712,7 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  '4 Pit Montir Aktif — Bisa servis $vehicleCount motor bersamaan',
+                                  '$_selectedPits Pit Montir Aktif — Bisa servis $vehicleCount motor bersamaan',
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
@@ -534,11 +726,11 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
 
                         const SizedBox(height: 12),
 
-                        // Interactive Map Route Preview
+                        // Interactive Map Route Preview (Matching Figma Map Illustration)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: SizedBox(
-                            height: 135,
+                            height: 140,
                             width: double.infinity,
                             child: LayoutBuilder(
                               builder: (context, constraints) {
@@ -549,29 +741,39 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
                                         painter: _MapRoutePainter(),
                                       ),
                                     ),
-                                    // Destination Pin Arrow Icon perfectly aligned on route destination
+                                    // Blue Teardrop Destination Pin with White Navigation Badge
                                     Positioned(
-                                      left: constraints.maxWidth * 0.76 - 13,
-                                      top: 135 * 0.35 - 13,
-                                      child: Container(
-                                        width: 26,
-                                        height: 26,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF0284C7),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(color: Colors.white, width: 2),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(alpha: 0.2),
-                                              blurRadius: 5,
-                                              offset: const Offset(0, 2),
+                                      left: constraints.maxWidth * 0.77 - 15,
+                                      top: 140 * 0.48 - 34,
+                                      child: SizedBox(
+                                        width: 30,
+                                        height: 36,
+                                        child: Stack(
+                                          alignment: Alignment.topCenter,
+                                          children: [
+                                            const Icon(
+                                              Icons.location_on_rounded,
+                                              color: Color(0xFF0284C7),
+                                              size: 34,
+                                            ),
+                                            Positioned(
+                                              top: 5,
+                                              child: Container(
+                                                width: 15,
+                                                height: 15,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                alignment: Alignment.center,
+                                                child: const Icon(
+                                                  Icons.near_me_rounded,
+                                                  color: Color(0xFF0284C7),
+                                                  size: 10,
+                                                ),
+                                              ),
                                             ),
                                           ],
-                                        ),
-                                        child: const Icon(
-                                          Icons.near_me_rounded,
-                                          color: Colors.white,
-                                          size: 14,
                                         ),
                                       ),
                                     ),
@@ -1166,119 +1368,147 @@ class _SchedulePickerScreenState extends State<SchedulePickerScreen> {
 }
 
 // -------------------------------------------------------------
-// Vector Canvas Map Route Painter
+// Vector Canvas Map Route Painter (Matching Figma Illustration)
 // -------------------------------------------------------------
 class _MapRoutePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Background map grid
-    final bgPaint = Paint()..color = const Color(0xFFF1F5F9);
+    // 1. Warm light grey map ground background
+    final bgPaint = Paint()..color = const Color(0xFFEFF1ED);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
-    // 2. City Park areas (soft green)
-    final parkPaint = Paint()..color = const Color(0xFFDCFCE7);
-    final parkRect1 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.width * 0.16, size.height * 0.08, size.width * 0.30, size.height * 0.22),
-      const Radius.circular(6),
-    );
-    canvas.drawRRect(parkRect1, parkPaint);
+    // 2. City block / parcel polygons
+    final blockPaint = Paint()..color = const Color(0xFFE2E5DF);
+    final blocks = [
+      Rect.fromLTWH(size.width * 0.11, size.height * 0.12, size.width * 0.14, size.height * 0.18),
+      Rect.fromLTWH(size.width * 0.20, size.height * 0.38, size.width * 0.11, size.height * 0.20),
+      Rect.fromLTWH(size.width * 0.48, size.height * 0.14, size.width * 0.14, size.height * 0.16),
+      Rect.fromLTWH(size.width * 0.64, size.height * 0.22, size.width * 0.12, size.height * 0.14),
+      Rect.fromLTWH(size.width * 0.10, size.height * 0.70, size.width * 0.18, size.height * 0.22),
+    ];
+    for (final b in blocks) {
+      canvas.drawRRect(RRect.fromRectAndRadius(b, const Radius.circular(4)), blockPaint);
+    }
 
-    final parkRect2 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.width * 0.44, size.height * 0.64, size.width * 0.26, size.height * 0.28),
-      const Radius.circular(6),
+    // 3. Green City Park areas (soft pastel green)
+    final parkPaint = Paint()..color = const Color(0xFFD6E8D5);
+    // Top Park
+    final parkTop = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.width * 0.27, size.height * 0.04, size.width * 0.16, size.height * 0.26),
+      const Radius.circular(8),
     );
-    canvas.drawRRect(parkRect2, parkPaint);
+    canvas.drawRRect(parkTop, parkPaint);
 
-    final parkRect3 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.width * 0.02, size.height * 0.64, size.width * 0.26, size.height * 0.28),
-      const Radius.circular(6),
+    // Bottom Park
+    final parkBottom = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.width * 0.40, size.height * 0.65, size.width * 0.28, size.height * 0.30),
+      const Radius.circular(8),
     );
-    canvas.drawRRect(parkRect3, parkPaint);
+    canvas.drawRRect(parkBottom, parkPaint);
 
-    // 3. Lake / Water areas (soft blue)
-    final waterPaint = Paint()..color = const Color(0xFFBAE6FD);
-    final waterPath = Path();
-    waterPath.moveTo(size.width * 0.58, 0);
-    waterPath.quadraticBezierTo(
-      size.width * 0.62, size.height * 0.22,
-      size.width * 0.72, size.height * 0.18,
-    );
-    waterPath.quadraticBezierTo(
-      size.width * 0.82, size.height * 0.14,
-      size.width * 0.76, 0,
-    );
-    waterPath.close();
-    canvas.drawPath(waterPath, waterPaint);
+    // 4. Water / Lake areas (soft blue)
+    final waterPaint = Paint()..color = const Color(0xFFBCE0FD);
+    // Top right lake
+    final lakeTop = Path();
+    lakeTop.moveTo(size.width * 0.52, 0);
+    lakeTop.quadraticBezierTo(size.width * 0.58, size.height * 0.26, size.width * 0.66, size.height * 0.20);
+    lakeTop.quadraticBezierTo(size.width * 0.74, size.height * 0.15, size.width * 0.72, 0);
+    lakeTop.close();
+    canvas.drawPath(lakeTop, waterPaint);
 
-    final waterPath2 = Path();
-    waterPath2.moveTo(size.width * 0.76, size.height * 0.65);
-    waterPath2.quadraticBezierTo(
-      size.width * 0.70, size.height * 0.85,
-      size.width * 0.85, size.height,
-    );
-    waterPath2.lineTo(size.width, size.height);
-    waterPath2.lineTo(size.width, size.height * 0.65);
-    waterPath2.close();
-    canvas.drawPath(waterPath2, waterPaint);
+    // Bottom right lake
+    final lakeBottom = Path();
+    lakeBottom.moveTo(size.width * 0.74, size.height * 0.66);
+    lakeBottom.quadraticBezierTo(size.width * 0.68, size.height * 0.80, size.width * 0.76, size.height * 0.89);
+    lakeBottom.quadraticBezierTo(size.width * 0.85, size.height * 0.98, size.width, size.height * 0.94);
+    lakeBottom.lineTo(size.width, size.height);
+    lakeBottom.lineTo(size.width * 0.68, size.height);
+    lakeBottom.close();
+    canvas.drawPath(lakeBottom, waterPaint);
 
-    // 4. White roads grid
+    // 5. White roads grid (matching Figma layout)
     final roadPaint = Paint()
       ..color = Colors.white
-      ..strokeWidth = 10
+      ..strokeWidth = 11.0
       ..strokeCap = StrokeCap.square;
 
-    // Horizontal roads
-    canvas.drawLine(Offset(0, size.height * 0.35), Offset(size.width, size.height * 0.35), roadPaint);
-    canvas.drawLine(Offset(0, size.height * 0.62), Offset(size.width, size.height * 0.62), roadPaint);
+    // Road 1 (Horizontal - Start road): (0, 0.64) -> (0.36, 0.64)
+    canvas.drawLine(Offset(0, size.height * 0.64), Offset(size.width * 0.36, size.height * 0.64), roadPaint);
 
-    // Vertical roads
-    canvas.drawLine(Offset(size.width * 0.12, 0), Offset(size.width * 0.12, size.height), roadPaint);
-    canvas.drawLine(Offset(size.width * 0.44, 0), Offset(size.width * 0.44, size.height), roadPaint);
-    canvas.drawLine(Offset(size.width * 0.76, 0), Offset(size.width * 0.76, size.height), roadPaint);
+    // Road 2 (Diagonal up-right): (0.33, 0.64) -> (0.44, 0.49)
+    canvas.drawLine(Offset(size.width * 0.33, size.height * 0.64), Offset(size.width * 0.44, size.height * 0.49), roadPaint);
 
-    // 5. Street & Park text labels
+    // Road 3 (Diagonal down-right): (0.44, 0.49) -> (0.58, 0.62)
+    canvas.drawLine(Offset(size.width * 0.44, size.height * 0.49), Offset(size.width * 0.58, size.height * 0.62), roadPaint);
+
+    // Road 4 (Diagonal up-right towards destination): (0.58, 0.62) -> (0.88, 0.44)
+    canvas.drawLine(Offset(size.width * 0.58, size.height * 0.62), Offset(size.width * 0.88, size.height * 0.44), roadPaint);
+
+    // Road 5 (Diagonal down-right from destination): (0.77, 0.48) -> (0.96, 0.82)
+    canvas.drawLine(Offset(size.width * 0.77, size.height * 0.48), Offset(size.width * 0.96, size.height * 0.82), roadPaint);
+
+    // Road 6 (Horizontal top - Oak Street): (0, 0.35) -> (0.70, 0.35)
+    canvas.drawLine(Offset(0, size.height * 0.35), Offset(size.width * 0.70, size.height * 0.35), roadPaint);
+
+    // Road 7 (Vertical Main Ave): (0.44, 0.20) -> (0.44, 1.0)
+    canvas.drawLine(Offset(size.width * 0.44, size.height * 0.20), Offset(size.width * 0.44, size.height), roadPaint);
+
+    // Road 8 (Top-left diagonal): (0.12, 0) -> (0.35, 0.64)
+    canvas.drawLine(Offset(size.width * 0.12, 0), Offset(size.width * 0.35, size.height * 0.64), roadPaint);
+
+    // 6. Street and Park labels
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
-    void drawText(String text, Offset pos, {Color color = const Color(0xFF94A3B8), double fontSize = 7.5}) {
+    void drawText(String text, Offset pos, {Color color = const Color(0xFF94A3B8), double fontSize = 7.0, bool isBold = false}) {
       textPainter.text = TextSpan(
         text: text,
-        style: TextStyle(color: color, fontSize: fontSize, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+        ),
       );
       textPainter.layout();
       textPainter.paint(canvas, pos);
     }
-    drawText('City Park', Offset(size.width * 0.24, size.height * 0.16));
-    drawText('City Park', Offset(size.width * 0.50, size.height * 0.76));
 
-    // 6. Navigation Route (Vibrant Blue Polyline)
+    drawText('City Park', Offset(size.width * 0.30, size.height * 0.15), color: const Color(0xFF7E9F7D), isBold: true);
+    drawText('City Park', Offset(size.width * 0.50, size.height * 0.78), color: const Color(0xFF7E9F7D), isBold: true);
+    drawText('Oak Street', Offset(size.width * 0.22, size.height * 0.35 - 9), color: const Color(0xFF94A3B8), fontSize: 6.5);
+    drawText('Main Ave', Offset(size.width * 0.44 + 4, size.height * 0.54), color: const Color(0xFF94A3B8), fontSize: 6.5);
+    drawText('Maple Rd', Offset(size.width * 0.76, size.height * 0.62), color: const Color(0xFF94A3B8), fontSize: 6.5);
+
+    // 7. Navigation Route (Vibrant Blue Polyline)
     final routePaint = Paint()
-      ..color = const Color(0xFF0284C7)
+      ..color = const Color(0xFF007AFF)
       ..strokeWidth = 4.5
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     final routePath = Path();
-    final startPt = Offset(size.width * 0.12, size.height * 0.62);
-    final turn1 = Offset(size.width * 0.44, size.height * 0.62);
-    final turn2 = Offset(size.width * 0.44, size.height * 0.35);
-    final endPt = Offset(size.width * 0.76, size.height * 0.35);
+    final startPt = Offset(size.width * 0.19, size.height * 0.64);
+    final pt1 = Offset(size.width * 0.33, size.height * 0.64);
+    final pt2 = Offset(size.width * 0.44, size.height * 0.49);
+    final pt3 = Offset(size.width * 0.58, size.height * 0.62);
+    final endPt = Offset(size.width * 0.77, size.height * 0.48);
 
     routePath.moveTo(startPt.dx, startPt.dy);
-    routePath.lineTo(turn1.dx, turn1.dy);
-    routePath.lineTo(turn2.dx, turn2.dy);
+    routePath.lineTo(pt1.dx, pt1.dy);
+    routePath.lineTo(pt2.dx, pt2.dy);
+    routePath.lineTo(pt3.dx, pt3.dy);
     routePath.lineTo(endPt.dx, endPt.dy);
     canvas.drawPath(routePath, routePaint);
 
-    // 7. Start Point Dot
-    final startDotPaint = Paint()..color = const Color(0xFF0284C7);
+    // 8. Start Point Marker (Cyan/Blue dot with white ring + Start label)
+    final startDotPaint = Paint()..color = const Color(0xFF007AFF);
     final startRingPaint = Paint()
       ..color = Colors.white
-      ..strokeWidth = 2
+      ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
-    canvas.drawCircle(startPt, 5, startDotPaint);
-    canvas.drawCircle(startPt, 5, startRingPaint);
-    drawText('Start', Offset(startPt.dx - 12, startPt.dy + 7), color: const Color(0xFF0284C7), fontSize: 8);
-    // 8. End Destination Pin is rendered by widget stack on top
+
+    canvas.drawCircle(startPt, 5.0, startDotPaint);
+    canvas.drawCircle(startPt, 5.0, startRingPaint);
+    drawText('Start', Offset(startPt.dx - 8, startPt.dy + 6), color: const Color(0xFF007AFF), fontSize: 7.5, isBold: true);
   }
 
   @override
