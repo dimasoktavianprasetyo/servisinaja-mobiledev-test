@@ -135,24 +135,44 @@ class HomeHeader extends StatelessWidget {
                             : const Color(0xFFE2E8F0),
                       ),
                     ),
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        Icons.notifications_none_rounded,
-                        size: 20,
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                NotificationScreen(controller: controller),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            controller.unreadNotificationCount > 0
+                                ? Icons.notifications_active_rounded
+                                : Icons.notifications_none_rounded,
+                            size: 20,
+                            color: isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimaryLight,
                           ),
-                        );
-                      },
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    NotificationScreen(controller: controller),
+                              ),
+                            );
+                          },
+                        ),
+                        if (controller.unreadNotificationCount > 0)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],

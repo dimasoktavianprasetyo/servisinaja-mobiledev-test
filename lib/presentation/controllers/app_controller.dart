@@ -5,6 +5,7 @@ import '../../data/models/service_model.dart';
 import '../../data/models/booking_model.dart';
 import '../../data/models/chat_message_model.dart';
 import '../../data/models/promo_voucher_model.dart';
+import '../../data/models/notification_model.dart';
 import '../../data/mock/mock_data.dart';
 
 class AppController extends ChangeNotifier {
@@ -18,6 +19,57 @@ class AppController extends ChangeNotifier {
   final List<PromoVoucherModel> _promos = List.from(MockData.promos);
   final List<ChatMessageModel> _chatMessages = List.from(MockData.sampleMessages);
   BookingModel? _currentBooking = MockData.activeBooking;
+
+  final List<NotificationItem> _notifications = [
+    NotificationItem(
+      id: 'n0',
+      title: 'Servis Multi-Motor (2 Unit) Sedang Berlangsung',
+      body:
+          'Motor Vario 160 & BeAT sedang dikerjakan di Pit 01 & 02 AHASS Cihampelas. Ketuk untuk pantau status live armada.',
+      time: 'Baru saja',
+      icon: Icons.settings_outlined,
+      category: 'status',
+      section: 'HARI INI',
+      highlightTag: 'Pit 01 & 02',
+      badgeText: 'Sedang Berlangsung',
+      badgeBg: const Color(0xFFFFF3ED),
+      badgeTextColor: const Color(0xFFEA580C),
+      isRead: false,
+    ),
+    NotificationItem(
+      id: 'n1',
+      title: 'Booking Multi-Motor Dikonfirmasi!',
+      body:
+          'Servis Vario 160 & BeAT di AHASS Cihampelas untuk Kam, 26 Sep (09:30 WIB).',
+      time: '10 mnt lalu',
+      icon: Icons.two_wheeler_rounded,
+      category: 'status',
+      section: 'HARI INI',
+      highlightTag: '2 Motor • Pit 01 & 02',
+      isRead: false,
+    ),
+    NotificationItem(
+      id: 'n2',
+      title: 'Pit 01 & 02 Siap Digunakan',
+      body:
+          'Teknisi telah menyiapkan dua pit servis paralel untuk motor Anda.',
+      time: '1 jam yang lalu',
+      icon: Icons.schedule_rounded,
+      category: 'status',
+      section: 'HARI INI',
+      isRead: false,
+    ),
+    NotificationItem(
+      id: 'n3',
+      title: 'Diskon 30% Servis Diklaim',
+      body: 'Voucher berhasil dipasang pada ringkasan booking.',
+      time: 'Kemarin',
+      icon: Icons.local_offer_outlined,
+      category: 'promo',
+      section: 'KEMARIN',
+      isRead: true,
+    ),
+  ];
 
   bool _isCallActive = false;
   bool _isCallMuted = false;
@@ -38,11 +90,58 @@ class AppController extends ChangeNotifier {
   List<PromoVoucherModel> get promos => _promos;
   List<ChatMessageModel> get chatMessages => _chatMessages;
   BookingModel? get currentBooking => _currentBooking;
+  List<NotificationItem> get notifications => _notifications;
+  int get unreadNotificationCount => _notifications.where((n) => !n.isRead).length;
 
   bool get isCallActive => _isCallActive;
   bool get isCallMuted => _isCallMuted;
   bool get isSpeakerOn => _isSpeakerOn;
   int get callDurationSeconds => _callDurationSeconds;
+
+  void addNotification({
+    required String title,
+    required String body,
+    String time = 'Baru saja',
+    IconData icon = Icons.notifications_active_rounded,
+    String category = 'status',
+    String section = 'HARI INI',
+    String? highlightTag,
+    String? badgeText,
+    Color? badgeBg,
+    Color? badgeTextColor,
+  }) {
+    final item = NotificationItem(
+      id: 'n_${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      body: body,
+      time: time,
+      icon: icon,
+      category: category,
+      section: section,
+      highlightTag: highlightTag,
+      badgeText: badgeText,
+      badgeBg: badgeBg,
+      badgeTextColor: badgeTextColor,
+      isRead: false,
+    );
+    _notifications.insert(0, item);
+    notifyListeners();
+  }
+
+  void markAllNotificationsRead() {
+    for (var n in _notifications) {
+      n.isRead = true;
+    }
+    notifyListeners();
+  }
+
+  void markNotificationRead(String id) {
+    final idx = _notifications.indexWhere((n) => n.id == id);
+    if (idx != -1) {
+      _notifications[idx].isRead = true;
+      notifyListeners();
+    }
+  }
 
   void toggleTheme() {
     _themeMode = isDarkMode ? ThemeMode.light : ThemeMode.dark;
@@ -105,9 +204,10 @@ class AppController extends ChangeNotifier {
     required DateTime date,
     required String time,
   }) {
+    final code = 'AHASS-JKT-${1000 + DateTime.now().second * 10}';
     _currentBooking = BookingModel(
       bookingId: 'BK-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
-      bookingCode: 'AHASS-JKT-${1000 + DateTime.now().second * 10}',
+      bookingCode: code,
       vehicle: vehicle,
       service: service,
       scheduleDate: date,
@@ -116,6 +216,15 @@ class AppController extends ChangeNotifier {
       workshopAddress: 'Jl. Jenderal Sudirman No. 45, Jakarta Pusat',
       status: BookingStatus.confirmed,
       totalAmount: service.price,
+    );
+    addNotification(
+      title: 'Booking Servis Berhasil!',
+      body: 'Tiket servis Anda #$code telah terbit untuk ${vehicle.name}. Ketuk untuk lihat rincian & QR code.',
+      category: 'status',
+      highlightTag: 'Dikonfirmasi',
+      badgeText: 'Terkonfirmasi',
+      badgeBg: const Color(0xFFDCFCE7),
+      badgeTextColor: const Color(0xFF16A34A),
     );
     notifyListeners();
   }

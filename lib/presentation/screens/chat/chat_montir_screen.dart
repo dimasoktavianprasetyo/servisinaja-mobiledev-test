@@ -129,10 +129,12 @@ class ChatMontirScreen extends StatefulWidget {
   final String? findingPrice;
   final String? findingPhoto;
   final String? findingDesc;
+  final bool isEmergency;
 
   const ChatMontirScreen({
     super.key,
     required this.controller,
+    this.isEmergency = false,
     this.mechanicName = 'Kang Agus',
     this.mechanicRole = 'Teknisi AHASS Cihampelas • Pit 01',
     this.avatarPath = 'assets/images/kang_agus.png',
@@ -144,7 +146,7 @@ class ChatMontirScreen extends StatefulWidget {
     this.findingPrice = '+Rp 45.000',
     this.findingPhoto = 'assets/images/cvt_roller_inspection.png',
     this.findingDesc =
-        'Ini pak kondisi roller CVT-nya sudah mulai aus dan peyang, penyebab gredeknya di sini. Disarankan ganti baru biar tarikan enteng lagi pak.',
+        'Ini mbak kondisi roller CVT-nya sudah mulai aus dan peyang, penyebab gredeknya di sini. Disarankan ganti baru biar tarikan enteng lagi mbak.',
   });
 
   @override
@@ -173,6 +175,37 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
   }
 
   List<_ChatMsg> _initMessages() {
+    if (widget.isEmergency) {
+      return [
+        const _ChatMsg(
+          isMe: false,
+          text:
+              'Halo Mbak Tania, posisi saya sudah lewat SPBU Djuanda ya. Sesuai maps sekitar 6 menitan lagi sampai di titik lokasi.',
+          time: '09:36',
+        ),
+        const _ChatMsg(
+          isMe: true,
+          text:
+              'Siap Mas, saya tunggu di depan ruko Alfamart persis ya, motor Honda Vario warna hitam doff.',
+          time: '09:37',
+          status: 'read',
+        ),
+        const _ChatMsg(
+          isMe: false,
+          text:
+              'Oke siap Kak! Perlengkapan tambal tubeless dan kompresor mini sudah siap. Jangan dipaksakan jalan ya ban-nya biar velg aman.',
+          time: '09:38',
+        ),
+        const _ChatMsg(
+          isMe: true,
+          text:
+              'Aman Mas, motor sudah saya standar dua di tempat teduh. Hati-hati di jalan! 🙏',
+          time: '09:39',
+          status: 'read',
+        ),
+      ];
+    }
+
     final isAsep = widget.mechanicName.toLowerCase().contains('asep');
 
     if (isAsep) {
@@ -181,7 +214,7 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
         _ChatMsg(
           isMe: false,
           text:
-              'Pagi Pak Dimas, saya Kang Asep di ${widget.pit}. Motor ${widget.vehicleName} bapak sudah mulai kami lakukan pengecekan servis berkala & pengereman ya pak.',
+              'Pagi Mbak Tania, saya Kang Asep di ${widget.pit}. Motor ${widget.vehicleName} mbak sudah mulai kami lakukan pengecekan servis berkala & pengereman ya mbak.',
           time: '09:32',
         ),
         const _ChatMsg(
@@ -194,7 +227,7 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
         _ChatMsg(
           isMe: false,
           text: widget.findingDesc ??
-              'Ini pak kondisi kampas rem belakangnya sudah mulai tipis dan aus. Sangat disarankan ganti baru biar pengereman kembali pakem dan aman di jalan ya pak.',
+              'Ini mbak kondisi kampas rem belakangnya sudah mulai tipis dan aus. Sangat disarankan ganti baru biar pengereman kembali pakem dan aman di jalan ya mbak.',
           time: '09:38',
           type: _MsgType.photo,
           imagePath: widget.findingPhoto ?? 'assets/images/kampas_rem_inspection.jpg',
@@ -215,7 +248,7 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
       _ChatMsg(
         isMe: false,
         text:
-            'Pagi Pak Dimas, saya Kang Agus di ${widget.pit}. ${widget.vehicleName} bapak sudah mulai kami bongkar untuk servis berkala ya pak.',
+            'Pagi Mbk Tania, saya Kang Agus di ${widget.pit}. ${widget.vehicleName} mbak sudah mulai kami bongkar untuk servis berkala ya mbak.',
         time: '09:32',
       ),
       const _ChatMsg(
@@ -228,7 +261,7 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
       _ChatMsg(
         isMe: false,
         text: widget.findingDesc ??
-            'Ini pak kondisi roller CVT-nya sudah mulai aus dan peyang, penyebab gredeknya di sini. Disarankan ganti baru biar tarikan enteng lagi pak.',
+            'Ini mbak kondisi roller CVT-nya sudah mulai aus dan peyang, penyebab gredeknya di sini. Disarankan ganti baru biar tarikan enteng lagi mbak.',
         time: '09:40',
         type: _MsgType.photo,
         imagePath: widget.findingPhoto ?? 'assets/images/cvt_roller_inspection.png',
@@ -267,6 +300,12 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
   void _send() {
     final text = _textCtrl.text.trim();
     if (text.isEmpty) return;
+    _sendText(text);
+    _textCtrl.clear();
+  }
+
+  void _sendText(String text) {
+    if (text.trim().isEmpty) return;
     setState(() {
       _messages.add(_ChatMsg(
         isMe: true,
@@ -274,7 +313,6 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
         time: _nowTime(),
         status: 'sent',
       ));
-      _textCtrl.clear();
     });
     Future.delayed(const Duration(milliseconds: 80), _scrollToBottom);
     _triggerMontirReply(type: 'text', userQuery: text);
@@ -348,45 +386,59 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
   }
 
   String _generateMontirReply(String type, {String? userQuery}) {
+    if (widget.isEmergency) {
+      final q = (userQuery ?? '').toLowerCase();
+      if (q.contains('alfamart') || q.contains('patokan')) {
+        return 'Siap Mbak! Sudah kelihatan plang Alfamart-nya di depan, saya belok ke parkiran sekarang ya.';
+      }
+      if (q.contains('tubeless') || q.contains('tambal')) {
+        return 'Aman Kak! Perlengkapan tubeless kit dan kompresor baterai sudah ready di box motor siaga saya.';
+      }
+      if (q.contains('menit') || q.contains('berapa') || q.contains('kapan')) {
+        return 'Sekitar 2-3 menit lagi sudah merapat ke depan Alfamart ya Kak Tania!';
+      }
+      return 'Siap Kak, saya segera merapat ke titik lokasi. Tetap tunggu di tempat aman ya!';
+    }
+
     final isAsep = widget.mechanicName.toLowerCase().contains('asep');
     final pit = widget.pit;
 
     if (type == 'agreement') {
       if (isAsep) {
-        return 'Siap Pak Dimas! Kampas rem belakang langsung kita pasang sparepart original AHM ya. Setelah dipasang akan langsung kami stel dan uji putaran roda biar pengereman pakem maksimal 👍';
+        return 'Siap Mbak Tania! Kampas rem belakang langsung kita pasang sparepart original AHM ya. Setelah dipasang akan langsung kami stel dan uji putaran roda biar pengereman pakem maksimal 👍';
       } else {
-        return 'Siap Pak Dimas! Roller CVT original Honda langsung saya pasang ya. Nanti sekalian kami bersihkan mangkok pulley-nya biar tarikan makin enteng dan gredek hilang total 👍';
+        return 'Siap Mbak Tania! Roller CVT original Honda langsung saya pasang ya. Nanti sekalian kami bersihkan mangkok pulley-nya biar tarikan makin enteng dan gredek hilang total 👍';
       }
     }
 
     if (type == 'rejection') {
       if (isAsep) {
-        return 'Baik Pak Dimas, kampas rem belakang tidak diganti dulu. Tromol dan kampas lamanya tetap kami bersihkan dari debu serta kami stel kerapatannya ya pak. Tetap hati-hati saat berkendara ya pak!';
+        return 'Baik mbak tania, kampas rem belakang tidak diganti dulu. Tromol dan kampas lamanya tetap kami bersihkan dari debu serta kami stel kerapatannya ya mbak. Tetap hati-hati saat berkendara ya mbak!';
       } else {
-        return 'Baik pak tidak apa-apa, untuk roller CVT-nya sementara kami bersihkan dan beri pelumas khusus dulu ya pak. Tapi kalau tarikan mulai makin gredek disarankan segera mampir servis lagi ya pak.';
+        return 'Baik mbak tidak apa-apa, untuk roller CVT-nya sementara kami bersihkan dan beri pelumas khusus dulu ya mbak. Tapi kalau tarikan mulai makin gredek disarankan segera mampir servis lagi ya mbak.';
       }
     }
 
     if (type == 'camera') {
-      return 'Foto kamera sudah saya terima ya Pak Dimas. Langsung kami teliti dan periksa bagian tersebut di $pit.';
+      return 'Foto kamera sudah saya terima ya mbak tania. Langsung kami teliti dan periksa bagian tersebut di $pit.';
     }
 
     if (type == 'gallery') {
-      return 'Foto kondisi motor dari galeri sudah masuk pak. Sangat membantu kami untuk analisa fisik kendaraannya di $pit.';
+      return 'Foto kondisi motor dari galeri sudah masuk mbak. Sangat membantu kami untuk analisa fisik kendaraannya di $pit.';
     }
 
     if (type == 'location') {
-      return 'Sip Pak Dimas, lokasi bapak sudah terdeteksi di bengkel. Silakan santai di ruang tunggu ber-AC ya pak, pengerjaan sedang kami proses.';
+      return 'Sip Mbak Tania, lokasi mbak sudah terdeteksi di bengkel. Silakan santai di ruang tunggu ber-AC ya mbak, pengerjaan sedang kami proses.';
     }
 
     if (type == 'document') {
-      return 'Terima kasih pak, dokumen buku servis sudah kami terima dan verifikasi. Riwayat servis bapak sudah tercatat di sistem database AHASS.';
+      return 'Terima kasih mbak, dokumen buku servis sudah kami terima dan verifikasi. Riwayat servis mbak sudah tercatat di sistem database AHASS.';
     }
 
     // Contextual Text Matching
     final q = (userQuery ?? '').toLowerCase();
     if (q.contains('oli') || q.contains('oil')) {
-      return 'Untuk oli mesin & gardan sudah kami siapkan pelumas standar Honda (MPX2/SPX2) ya pak, dijamin original dan tarikan mesin jadi adem.';
+      return 'Untuk oli mesin & gardan sudah kami siapkan pelumas standar Honda (MPX2/SPX2) ya mbak, dijamin original dan tarikan mesin jadi adem.';
     }
     if (q.contains('lama') ||
         q.contains('selesai') ||
@@ -394,7 +446,7 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
         q.contains('jam') ||
         q.contains('menit') ||
         q.contains('berapa')) {
-      return 'Estimasi pengerjaan di $pit sekitar 20-25 menit lagi ya pak. Begitu servis & final check selesai, langsung kami kabari di sini!';
+      return 'Estimasi pengerjaan di $pit sekitar 20-25 menit lagi ya mbak. Begitu servis & final check selesai, langsung kami kabari di sini!';
     }
     if (q.contains('biaya') ||
         q.contains('harga') ||
@@ -402,37 +454,37 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
         q.contains('bayar') ||
         q.contains('rp') ||
         q.contains('total')) {
-      return 'Untuk estimasi rincian biaya bisa dicek di tiket aplikasi ya pak. Nanti pembayaran di kasir bisa tunai, QRIS, atau kartu debit.';
+      return 'Untuk estimasi rincian biaya bisa dicek di tiket aplikasi ya mbak. Nanti pembayaran di kasir bisa tunai, QRIS, atau kartu debit.';
     }
     if (q.contains('terima kasih') ||
         q.contains('makasih') ||
         q.contains('nuhun') ||
         q.contains('thanks') ||
         q.contains('thx')) {
-      return 'Sama-sama Pak Dimas! Senang bisa melayani servis motor bapak hari ini. Jangan ragu tanyakan kalau ada hal lain ya pak 🙏';
+      return 'Sama-sama Mbak Tania! Senang bisa melayani servis motor mbak hari ini. Jangan ragu tanyakan kalau ada hal lain ya mbak 🙏';
     }
     if (q.contains('rem') || q.contains('kampas') || q.contains('tromol')) {
-      return 'Pengereman sedang kami cek ketebalan dan kepakemannya ya pak, keselamatan bapak nomor satu.';
+      return 'Pengereman sedang kami cek ketebalan dan kepakemannya ya mbak, keselamatan mbak nomor satu.';
     }
     if (q.contains('cvt') ||
         q.contains('roller') ||
         q.contains('gredek') ||
         q.contains('vbelt') ||
         q.contains('vanbelt')) {
-      return 'Area CVT sedang kami bersihkan tuntas dari kotoran dan serbuk kampas ganda ya pak.';
+      return 'Area CVT sedang kami bersihkan tuntas dari kotoran dan serbuk kampas ganda ya mbak.';
     }
     if (q.contains('aki') || q.contains('baterai') || q.contains('kelistrikan')) {
-      return 'Tegangan aki & sistem pengisian sudah kami ukur juga pak, kondisinya masih sangat sehat dan stabil.';
+      return 'Tegangan aki & sistem pengisian sudah kami ukur juga mbak, kondisinya masih sangat sehat dan stabil.';
     }
     if (q.contains('halo') ||
         q.contains('pagi') ||
         q.contains('siang') ||
         q.contains('sore') ||
         q.contains('hai')) {
-      return 'Halo Pak Dimas! Ada yang perlu dicek atau ditambahkan untuk servis motor bapak di $pit?';
+      return 'Halo Mbak Tania! Ada yang perlu dicek atau ditambahkan untuk servis motor mbak di $pit?';
     }
 
-    return 'Siap Pak Dimas, pesan bapak sudah saya catat. Sedang kami tangani dengan teliti di $pit ya pak 👍';
+    return 'Siap Mbak Tania, pesan mbak tania sudah saya catat. Sedang kami tangani dengan teliti di $pit ya mbak 👍';
   }
 
   // ─── Attachment Actions ───────────────────────────────────────────────────
@@ -682,6 +734,7 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
         children: [
           _buildVehicleBanner(isDark),
           Expanded(child: _buildMessages(isDark)),
+          if (widget.isEmergency) _buildQuickChips(isDark),
           _buildInputBar(isDark),
         ],
       ),
@@ -749,55 +802,112 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
             ],
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${widget.mechanicName} (${widget.pit})',
-                style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.isEmergency)
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.mechanicName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.verified,
+                        size: 15,
+                        color: Color(0xFF2563EB),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    '${widget.mechanicName} (${widget.pit})',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                if (widget.isEmergency)
+                  Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF16A34A),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          'Siaga ADV • OTW (~6 mnt)',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+              else
+                Row(
+                  children: [
+                    Text(
+                      roleSub.isNotEmpty ? roleSub : 'Teknisi AHASS Cihampelas',
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.50)
+                            : const Color(0xFF64748B),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      '  •  ',
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.30)
+                            : const Color(0xFF94A3B8),
+                        fontSize: 11,
+                      ),
+                    ),
+                    Text(
+                      _isMontirTyping ? 'Sedang mengetik...' : 'Online',
+                      style: TextStyle(
+                        color: _isMontirTyping
+                            ? (isDark ? const Color(0xFFFFB347) : const Color(0xFFEA6C00))
+                            : const Color(0xFF22C55E),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    roleSub.isNotEmpty ? roleSub : 'Teknisi AHASS Cihampelas',
-                    style: TextStyle(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.50)
-                          : const Color(0xFF64748B),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    '  •  ',
-                    style: TextStyle(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.30)
-                          : const Color(0xFF94A3B8),
-                      fontSize: 11,
-                    ),
-                  ),
-                  Text(
-                    _isMontirTyping ? 'Sedang mengetik...' : 'Online',
-                    style: TextStyle(
-                      color: _isMontirTyping
-                          ? (isDark ? const Color(0xFFFFB347) : const Color(0xFFEA6C00))
-                          : const Color(0xFF22C55E),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
+    ),
       actions: [
         GestureDetector(
           onTap: () => Navigator.push(
@@ -805,7 +915,12 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
             MaterialPageRoute(
               builder: (_) => CallMontirScreen(
                 controller: widget.controller,
+                isEmergency: widget.isEmergency,
                 mechanicName: widget.mechanicName,
+                mechanicRole: widget.isEmergency
+                    ? 'Teknisi AHASS Siaga'
+                    : widget.mechanicRole,
+                workshopName: 'AHASS Siaga Cihampelas',
                 avatarPath: widget.avatarPath,
                 pit: widget.pit,
               ),
@@ -814,11 +929,17 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
           child: Container(
             width: 38,
             height: 38,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF22C55E),
+              color: widget.isEmergency
+                  ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                  : const Color(0xFF22C55E),
             ),
-            child: const Icon(Icons.phone_rounded, color: Colors.white, size: 18),
+            child: Icon(
+              Icons.phone_rounded,
+              color: widget.isEmergency ? const Color(0xFF059669) : Colors.white,
+              size: 18,
+            ),
           ),
         ),
         const SizedBox(width: 14),
@@ -837,6 +958,90 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
 
   // ─── Vehicle banner ────────────────────────────────────────────────────────
   Widget _buildVehicleBanner(bool isDark) {
+    if (widget.isEmergency) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A1B0A) : const Color(0xFFFEF3C7),
+          border: Border(
+            bottom: BorderSide(
+              color: isDark ? const Color(0xFF78350F) : const Color(0xFFFDE68A),
+              width: 1,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD97706).withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                size: 18,
+                color: Color(0xFFD97706),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${widget.vehicleName} (${widget.vehiclePlate})',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? const Color(0xFFFDE68A) : const Color(0xFF78350F),
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    'Kendala: ${widget.findingTitle ?? "Ban Belakang Bocor Halus"}',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? const Color(0xFFFCD34D) : const Color(0xFF92400E),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Lacak Montir',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFD97706),
+                    ),
+                  ),
+                  SizedBox(width: 2),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: Color(0xFFD97706),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
@@ -877,21 +1082,139 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
   // ─── Messages ──────────────────────────────────────────────────────────────
   Widget _buildMessages(bool isDark) {
     final showTyping = _isMontirTyping;
-    final totalItems = _messages.length + 1 + (showTyping ? 1 : 0);
+    final int extraHeaders = widget.isEmergency ? 2 : 1;
+    final totalItems = _messages.length + extraHeaders + (showTyping ? 1 : 0);
 
     return ListView.builder(
       controller: _scrollCtrl,
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
       itemCount: totalItems,
       itemBuilder: (context, index) {
-        if (index == 0) return _buildDateSeparator('Hari Ini, 09:30 WIB', isDark);
+        if (index == 0) {
+          return _buildDateSeparator(
+            widget.isEmergency ? 'HARI INI • 09:35 WIB' : 'Hari Ini, 09:30 WIB',
+            isDark,
+          );
+        }
+        if (widget.isEmergency && index == 1) {
+          return _buildSystemNotice(isDark);
+        }
         if (showTyping && index == totalItems - 1) {
           return _buildTypingBubble(isDark);
         }
-        final msgIndex = index - 1;
+        final msgIndex = index - extraHeaders;
         final msg = _messages[msgIndex];
         return _buildBubble(msg, msgIndex, isDark);
       },
+    );
+  }
+
+  Widget _buildSystemNotice(bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: const BoxDecoration(
+              color: Color(0xFF16A34A),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(
+                    text: 'Montir Ditugaskan: ',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const TextSpan(
+                    text: 'Kang Asep sedang menuju lokasi dengan peralatan lengkap.',
+                  ),
+                ],
+              ),
+              style: TextStyle(
+                fontSize: 11,
+                height: 1.35,
+                color: isDark ? Colors.white.withValues(alpha: 0.85) : const Color(0xFF334155),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickChips(bool isDark) {
+    final chips = [
+      '📍 Patokan di Alfamart',
+      '🛵 Ada tambal tubeless?',
+      '⏱️ Berapa menit lagi?',
+    ];
+
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        scrollDirection: Axis.horizontal,
+        itemCount: chips.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, idx) {
+          final label = chips[idx];
+          return InkWell(
+            onTap: () {
+              _textCtrl.text = label;
+              _send();
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : const Color(0xFF334155),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -1621,9 +1944,15 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Attach button (+)
+          // Attach button (Camera icon in emergency, + icon otherwise)
           GestureDetector(
-            onTap: () => _showAttachmentOptions(isDark),
+            onTap: () {
+              if (widget.isEmergency) {
+                _onAttachCamera();
+              } else {
+                _showAttachmentOptions(isDark);
+              }
+            },
             child: Container(
               width: 42,
               height: 42,
@@ -1631,18 +1960,18 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
                 shape: BoxShape.circle,
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.08)
-                    : const Color(0xFFF1F5F9),
+                    : const Color(0xFFEFF6FF),
               ),
               child: Icon(
-                Icons.add_rounded,
-                size: 24,
+                widget.isEmergency ? Icons.camera_alt_outlined : Icons.add_rounded,
+                size: 22,
                 color: isDark ? Colors.white70 : const Color(0xFF64748B),
               ),
             ),
           ),
           const SizedBox(width: 10),
 
-          // Text field
+          // Text field with optional Location pin
           Expanded(
             child: Container(
               constraints: const BoxConstraints(minHeight: 42, maxHeight: 120),
@@ -1655,28 +1984,48 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
                       : const Color(0xFFE2E8F0),
                 ),
               ),
-              child: TextField(
-                controller: _textCtrl,
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.newline,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Ketik pesan ke ${widget.mechanicName}...',
-                  hintStyle: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _textCtrl,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.newline,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Ketik pesan anda disini...',
+                        hintStyle: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 11,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 11,
-                  ),
-                  border: InputBorder.none,
-                  isDense: true,
-                ),
+                  if (widget.isEmergency)
+                    GestureDetector(
+                      onTap: () {
+                        _sendText('📍 Patokan di Alfamart Cihampelas persis depan ruko');
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Icon(
+                          Icons.location_on_outlined,
+                          size: 20,
+                          color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -1692,14 +2041,14 @@ class _ChatMontirScreenState extends State<ChatMontirScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: _hasText
-                    ? const Color(0xFFFF8C00)
-                    : (isDark ? Colors.white12 : const Color(0xFFE2E8F0)),
+                    ? const Color(0xFFFF5C00)
+                    : (widget.isEmergency
+                        ? const Color(0xFFFF5C00)
+                        : (isDark ? Colors.white12 : const Color(0xFFE2E8F0))),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.send_rounded,
-                color: _hasText
-                    ? Colors.white
-                    : (isDark ? Colors.white24 : const Color(0xFF94A3B8)),
+                color: Colors.white,
                 size: 19,
               ),
             ),

@@ -4,35 +4,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../controllers/app_controller.dart';
 import '../status/status_servis_screen.dart';
 
-class NotificationItem {
-  final String id;
-  final String title;
-  final String body;
-  final String time;
-  final IconData icon;
-  final String category; // 'status' or 'promo' or 'tips'
-  final String section; // 'HARI INI' or 'KEMARIN'
-  final String? highlightTag;
-  final String? badgeText;
-  final Color? badgeBg;
-  final Color? badgeTextColor;
-  bool isRead;
-
-  NotificationItem({
-    required this.id,
-    required this.title,
-    required this.body,
-    required this.time,
-    required this.icon,
-    required this.category,
-    required this.section,
-    this.highlightTag,
-    this.badgeText,
-    this.badgeBg,
-    this.badgeTextColor,
-    this.isRead = false,
-  });
-}
+import '../../../data/models/notification_model.dart';
 
 class NotificationScreen extends StatefulWidget {
   final AppController controller;
@@ -50,82 +22,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   int _selectedFilterIndex = 0;
   final List<String> _filters = ['Semua', 'Status Servis', 'Promo'];
 
-  late List<NotificationItem> _notifications;
-
-  @override
-  void initState() {
-    super.initState();
-    _notifications = [
-      NotificationItem(
-        id: 'n0',
-        title: 'Servis Multi-Motor (2 Unit) Sedang Berlangsung',
-        body:
-            'Motor Vario 160 & BeAT sedang dikerjakan di Pit 01 & 02 AHASS Cihampelas. Ketuk untuk pantau status live armada.',
-        time: 'Baru saja',
-        icon: Icons.settings_outlined,
-        category: 'status',
-        section: 'HARI INI',
-        highlightTag: 'Pit 01 & 02',
-        badgeText: 'Sedang Berlangsung',
-        badgeBg: const Color(0xFFFFF3ED),
-        badgeTextColor: const Color(0xFFEA580C),
-        isRead: false,
-      ),
-      NotificationItem(
-        id: 'n1',
-        title: 'Booking Multi-Motor Dikonfirmasi!',
-        body:
-            'Servis Vario 160 & BeAT di AHASS Cihampelas untuk Kam, 26 Sep (09:30 WIB).',
-        time: '10 mnt lalu',
-        icon: Icons.two_wheeler_rounded,
-        category: 'status',
-        section: 'HARI INI',
-        highlightTag: '2 Motor • Pit 01 & 02',
-        isRead: false,
-      ),
-      NotificationItem(
-        id: 'n2',
-        title: 'Pit 01 & 02 Siap Digunakan',
-        body:
-            'Teknisi telah menyiapkan dua pit servis paralel untuk motor Anda.',
-        time: '1 jam yang lalu',
-        icon: Icons.schedule_rounded,
-        category: 'status',
-        section: 'HARI INI',
-        isRead: false,
-      ),
-      NotificationItem(
-        id: 'n3',
-        title: 'Diskon 30% Servis Diklaim',
-        body: 'Voucher berhasil dipasang pada ringkasan booking.',
-        time: 'Kemarin, 14:15',
-        icon: Icons.local_offer_rounded,
-        category: 'promo',
-        section: 'KEMARIN',
-        badgeText: 'Hemat Rp 25rb',
-        badgeBg: const Color(0xFFDCFCE7),
-        badgeTextColor: const Color(0xFF16A34A),
-        isRead: true,
-      ),
-      NotificationItem(
-        id: 'n4',
-        title: 'Tips Perawatan Kampas Rem',
-        body: 'Kenali ciri kampas rem motor matic yang perlu diganti.',
-        time: '23 Sep 2026',
-        icon: Icons.menu_book_rounded,
-        category: 'promo',
-        section: 'KEMARIN',
-        isRead: true,
-      ),
-    ];
-  }
-
   void _markAllAsRead() {
-    setState(() {
-      for (final n in _notifications) {
-        n.isRead = true;
-      }
-    });
+    widget.controller.markAllNotificationsRead();
+    setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Semua notifikasi ditandai telah dibaca'),
@@ -136,18 +35,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   List<NotificationItem> get _filteredNotifications {
+    final list = widget.controller.notifications;
     if (_selectedFilterIndex == 1) {
-      return _notifications.where((n) => n.category == 'status').toList();
+      return list.where((n) => n.category == 'status').toList();
     } else if (_selectedFilterIndex == 2) {
-      return _notifications.where((n) => n.category == 'promo').toList();
+      return list.where((n) => n.category == 'promo').toList();
     }
-    return _notifications;
+    return list;
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = widget.controller.isDarkMode;
-    final unreadTodayCount = _notifications
+    final unreadTodayCount = widget.controller.notifications
         .where((n) => n.section == 'HARI INI' && !n.isRead)
         .length;
 

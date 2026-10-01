@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../controllers/app_controller.dart';
-import '../../call/call_montir_screen.dart';
+import '../../emergency/emergency_request_screen.dart';
 
 class FeaturesGrid extends StatelessWidget {
   final AppController controller;
@@ -31,9 +31,8 @@ class FeaturesGrid extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => CallMontirScreen(
+              builder: (_) => EmergencyRequestScreen(
                 controller: controller,
-                isEmergency: true,
               ),
             ),
           );
