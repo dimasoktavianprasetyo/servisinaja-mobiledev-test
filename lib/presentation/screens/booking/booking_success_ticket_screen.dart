@@ -129,20 +129,310 @@ class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
     );
   }
 
-  void _shareTicket() {
+  void _showSaveOrShareOptions(bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.15),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top drag pill
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Title & Subtitle (No icon)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Simpan atau Bagikan Tiket',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    const Text(
+                      'Pilih format penyimpanan untuk bukti ke bengkel',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                // Option 1: Simpan sebagai Gambar (PNG)
+                _buildExportOptionCard(
+                  isDark: isDark,
+                  icon: Icons.image_rounded,
+                  iconBgColor: const Color(0xFFEFF6FF),
+                  iconColor: const Color(0xFF2563EB),
+                  title: 'Simpan Gambar Tiket (PNG)',
+                  subtitle: 'Format gambar siap simpan ke Galeri atau kirim via WA',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _handleExportImage();
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
+                // Option 2: Unduh Dokumen PDF
+                _buildExportOptionCard(
+                  isDark: isDark,
+                  icon: Icons.picture_as_pdf_rounded,
+                  iconBgColor: const Color(0xFFFEF2F2),
+                  iconColor: const Color(0xFFDC2626),
+                  title: 'Unduh Dokumen PDF Resmi',
+                  subtitle: 'Format PDF lengkap rincian armada, barcode & invoice',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _handleExportPdf();
+                  },
+                ),
+
+                const SizedBox(height: 10),
+
+                // Option 3: Bagikan Tautan
+                _buildExportOptionCard(
+                  isDark: isDark,
+                  icon: Icons.link_rounded,
+                  iconBgColor: const Color(0xFFF0FDF4),
+                  iconColor: const Color(0xFF16A34A),
+                  title: 'Salin & Bagikan Tautan',
+                  subtitle: 'Tautan online langsung menuju tiket servis ini',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _handleShareLink();
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+                // Cancel button
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Tutup',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleExportImage() {
+    _showProcessingSnackbar(
+      loadingMessage: 'Menyiapkan gambar tiket...',
+      successMessage: 'Tiket berhasil disimpan ke Galeri (servisin-$_bookingCode.png)!',
+      icon: Icons.image_rounded,
+      accentColor: const Color(0xFF2563EB),
+    );
+  }
+
+  void _handleExportPdf() {
+    _showProcessingSnackbar(
+      loadingMessage: 'Menyusun dokumen PDF resmi...',
+      successMessage: 'Dokumen PDF berhasil diunduh (Tiket_Servis_$_bookingCode.pdf)!',
+      icon: Icons.picture_as_pdf_rounded,
+      accentColor: const Color(0xFFDC2626),
+    );
+  }
+
+  void _handleShareLink() {
+    final link = 'https://servisinaja.id/ticket/$_bookingCode';
+    Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.share_rounded, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Text('Tautan Tiket Servis berhasil disiapkan!'),
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Tautan tiket berhasil disalin: $link',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
-        backgroundColor: primaryColor,
+        backgroundColor: const Color(0xFF16A34A),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showProcessingSnackbar({
+    required String loadingMessage,
+    required String successMessage,
+    required IconData icon,
+    required Color accentColor,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(loadingMessage),
+          ],
+        ),
+        backgroundColor: const Color(0xFF1E293B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(milliseconds: 900),
+      ),
+    );
+
+    Future.delayed(const Duration(milliseconds: 950), () {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  successMessage,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: accentColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
+  }
+
+  Widget _buildExportOptionCard({
+    required bool isDark,
+    required IconData icon,
+    required Color iconBgColor,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+            width: 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: iconBgColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: Color(0xFF94A3B8),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -219,7 +509,7 @@ class _BookingSuccessTicketScreenState extends State<BookingSuccessTicketScreen>
             ),
             // Right: Circular Share Button
             InkWell(
-              onTap: _shareTicket,
+              onTap: () => _showSaveOrShareOptions(isDark),
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 width: 38,
