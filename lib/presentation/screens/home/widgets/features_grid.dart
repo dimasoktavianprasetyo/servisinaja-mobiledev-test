@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../controllers/app_controller.dart';
-import '../../booking/booking_step1_screen.dart';
 import '../../call/call_montir_screen.dart';
 
 class FeaturesGrid extends StatelessWidget {
@@ -44,15 +43,7 @@ class FeaturesGrid extends StatelessWidget {
         'title': 'Home Service',
         'image': 'assets/images/feature_homeservice.png',
         'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BookingStep1Screen(
-                controller: controller,
-                isHomeService: true,
-              ),
-            ),
-          );
+          controller.setNavIndex(3);
         },
       },
     ];

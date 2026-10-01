@@ -62,18 +62,41 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addVehicle(String name, String plateNumber) {
+  VehicleModel addVehicle(
+    String name,
+    String plateNumber, {
+    int odometerKm = 0,
+    String transmission = 'Matic (AT)',
+    String engineCc = '160cc',
+    String year = '2024',
+    String color = 'Hitam Doff',
+    String chassisNumber = '',
+    String engineNumber = '',
+    String garageLabel = 'Garasi Tambahan',
+  }) {
     final newVehicle = VehicleModel(
       id: 'v_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
       plateNumber: plateNumber,
-      odometerKm: 0,
+      odometerKm: odometerKm,
       lastService: 'Baru Didaftarkan',
-      conditionStatus: 'Belum Servis',
+      conditionStatus: 'Kondisi OK',
       isSelected: false,
+      transmission: transmission,
+      engineCc: engineCc,
+      year: year,
+      color: color,
+      chassisNumber: chassisNumber.isNotEmpty
+          ? chassisNumber
+          : 'MH1KF1144GH${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      engineNumber: engineNumber.isNotEmpty
+          ? engineNumber
+          : 'KF11E-${DateTime.now().millisecond}',
+      garageLabel: garageLabel,
     );
     _vehicles.add(newVehicle);
     notifyListeners();
+    return newVehicle;
   }
 
   void createBooking({

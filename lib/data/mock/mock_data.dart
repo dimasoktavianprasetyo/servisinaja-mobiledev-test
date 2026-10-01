@@ -24,16 +24,8 @@ class MockData {
       conditionStatus: 'Kondisi OK',
       isSelected: false,
     ),
-    const VehicleModel(
-      id: 'v3',
-      name: 'Honda PCX 160',
-      plateNumber: 'B 9988 DEF',
-      odometerKm: 4100,
-      lastService: '10 Jan 2025',
-      conditionStatus: 'Perlu Servis',
-      isSelected: false,
-    ),
   ];
+
 
   static const List<ServiceModel> services = [
     ServiceModel(

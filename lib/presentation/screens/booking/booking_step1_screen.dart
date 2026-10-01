@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../controllers/app_controller.dart';
+import '../garasi/widgets/tambah_motor_sheet.dart';
 import 'schedule_picker_screen.dart';
 
 class BookingStep1Screen extends StatefulWidget {
   final AppController controller;
   final bool isHomeService;
+  /// Jika diisi, booking hanya untuk 1 kendaraan dengan plate ini
+  final String? initialVehiclePlate;
 
   const BookingStep1Screen({
     super.key,
     required this.controller,
     this.isHomeService = false,
+    this.initialVehiclePlate,
   });
 
   @override
@@ -22,8 +26,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
   final TextEditingController _notesController = TextEditingController();
 
   int _prevOdometer = 12450;
-
-  // Index of vehicle card currently swiped open to show red delete button
+  // ignore: unused_field
   int? _swipedDeleteIndex;
 
   // Master list of registered vehicles in user\'s garage (2 motor garasi)
@@ -94,11 +97,8 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
     return copy;
   }
 
-  // Mutable list of vehicles initialized inline (immune to LateInitializationError)
-  final List<Map<String, dynamic>> _vehicles = [
-    _cloneVehicle(_garageVehicles[0]),
-    _cloneVehicle(_garageVehicles[1]),
-  ];
+  // Mutable list of vehicles — diisi di initState agar bisa akses widget.initialVehiclePlate
+  final List<Map<String, dynamic>> _vehicles = [];
 
   // Dynamic getters & setters for currently selected vehicle's state
   Map<String, dynamic> get _currentVehicle {
@@ -430,11 +430,56 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
   @override
   void initState() {
     super.initState();
+
+    final filterPlate = widget.initialVehiclePlate;
+    if (filterPlate != null && filterPlate.isNotEmpty) {
+      // Dari card garasi: hanya booking kendaraan ini
+      // Coba cari di static list dulu
+      final staticMatch = _garageVehicles.firstWhere(
+        (g) => g['plate'] == filterPlate,
+        orElse: () => <String, dynamic>{},
+      );
+      if (staticMatch.isNotEmpty) {
+        _vehicles.add(_cloneVehicle(staticMatch));
+      } else {
+        // Kendaraan dinamis (ditambahkan via form) — ambil dari controller
+        final ctrlMatch = widget.controller.vehicles.firstWhere(
+          (v) => v.plateNumber == filterPlate,
+          orElse: () => widget.controller.vehicles.first,
+        );
+        final dynamicMap = {
+          'id': ctrlMatch.id,
+          'name': ctrlMatch.name,
+          'shortName': ctrlMatch.name.replaceFirst('Honda ', ''),
+          'plate': ctrlMatch.plateNumber,
+          'odometer': ctrlMatch.odometerKm > 0 ? ctrlMatch.odometerKm : 1500,
+          'isComplete': true,
+          'status': 'Siap Servis',
+          'lastService': ctrlMatch.lastService,
+          'selectedPackageIndex': 0,
+          'parts': <Map<String, dynamic>>[
+            {'title': 'Oli AHM SPX2', 'price': 65000},
+          ],
+          'selectedParts': <int>{0},
+          'notes': '',
+          'attachedMedia': <Map<String, String>>[],
+        };
+        _garageVehicles.add(dynamicMap);
+        _vehicles.add(_cloneVehicle(dynamicMap));
+      }
+    } else {
+      // Default (dari navbar): semua 2 kendaraan garasi
+      _vehicles.add(_cloneVehicle(_garageVehicles[0]));
+      _vehicles.add(_cloneVehicle(_garageVehicles[1]));
+    }
+
     if (_vehicles.isNotEmpty) {
       _prevOdometer = (_vehicles[0]['odometer'] as int?) ?? 12450;
       _notesController.text = (_vehicles[0]['notes'] as String?) ?? '';
     }
   }
+
+
 
   @override
   void dispose() {
@@ -553,7 +598,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
   // -------------------------------------------------------------
   void _showAddUnitSheet(bool isDark) {
     // Ambil daftar plat nomor yang saat ini aktif di booking
-    final selectedPlates = _vehicles.map((v) => v['plate'] as String).toSet();
+    final selectedPlates = _vehicles.map((v) => (v['plate'] as String?) ?? '').toSet();
 
     showModalBottomSheet(
       context: context,
@@ -646,7 +691,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                           setModalState(() {
                             selectedPlates.clear();
                             for (final g in _garageVehicles) {
-                              selectedPlates.add(g['plate'] as String);
+                              selectedPlates.add((g['plate'] as String?) ?? '');
                             }
                           });
                         },
@@ -700,7 +745,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
 
                 // Daftar Motor dari Garasi (Cards dengan Checkbox)
                 ..._garageVehicles.map((motor) {
-                  final plate = motor['plate'] as String;
+                  final plate = (motor['plate'] as String?) ?? '';
                   final isChecked = selectedPlates.contains(plate);
 
                   return Padding(
@@ -777,7 +822,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                   Row(
                                     children: [
                                       Text(
-                                        motor['name'] as String,
+                                        (motor['name'] as String?) ?? 'Honda Motor',
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w800,
@@ -830,7 +875,90 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                   );
                 }),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 6),
+
+                // Button Tambah Motor Baru ke Garasi & Booking
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      showTambahMotorSheet(
+                        context,
+                        controller: widget.controller,
+                        onVehicleAdded: (newVehicle) {
+                          final newMap = {
+                            'id': newVehicle.id,
+                            'name': newVehicle.name,
+                            'shortName': newVehicle.name.replaceFirst('Honda ', ''),
+                            'plate': newVehicle.plateNumber,
+                            'odometer': newVehicle.odometerKm > 0 ? newVehicle.odometerKm : 1500,
+                            'isComplete': true,
+                            'status': 'Siap Servis',
+                            'lastService': 'Baru Didaftarkan',
+                            'selectedPackageIndex': 0,
+                            'parts': <Map<String, dynamic>>[
+                              {
+                                'title': 'AHM Oil SPX2 0.8L (Fully Synthetic)',
+                                'partNumber': '08234-2PK-25N',
+                                'price': 69000,
+                                'qty': 1,
+                                'isRecommended': true,
+                                'warranty': 'Garansi Resmi AHM 100% Original',
+                              },
+                            ],
+                            'notes': '',
+                          };
+                          setState(() {
+                            _garageVehicles.add(newMap);
+                            _vehicles.add(_cloneVehicle(newMap));
+                            _selectedVehicleIndex = _vehicles.length - 1;
+                            _notesController.text = '';
+                            _prevOdometer = newMap['odometer'] as int;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${newVehicle.name} (${newVehicle.plateNumber}) berhasil didaftarkan dan dipilih untuk booking!'),
+                              backgroundColor: const Color(0xFF16A34A),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
+                          style: BorderStyle.solid,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.add_circle_outline_rounded,
+                            size: 18,
+                            color: Color(0xFFF97316),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '+ Daftarkan Motor Baru (Form Lengkap AHASS)',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
 
                 // Button Terapkan
                 SizedBox(
@@ -1150,10 +1278,10 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
           final filteredIndices = <int>[];
           for (int i = 0; i < _catalogParts.length; i++) {
             final part = _catalogParts[i];
-            final title = (part['title'] as String).toLowerCase();
-            final code = (part['code'] as String).toLowerCase();
-            final cat = part['category'] as String;
-            final desc = ((part['desc'] ?? '') as String).toLowerCase();
+            final title = ((part['title'] as String?) ?? '').toLowerCase();
+            final code = ((part['code'] as String?) ?? '').toLowerCase();
+            final cat = (part['category'] as String?) ?? 'Semua';
+            final desc = ((part['desc'] as String?) ?? '').toLowerCase();
 
             final matchesCategory = selectedCategory == 'Semua' || cat == selectedCategory;
             final q = searchQuery.toLowerCase().trim();
@@ -1427,7 +1555,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  part['title'] as String,
+                                                  (part['title'] as String?) ?? '',
                                                   style: TextStyle(
                                                     fontSize: 13,
                                                     fontWeight: FontWeight.w800,
@@ -1456,7 +1584,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                                   borderRadius: BorderRadius.circular(4),
                                                 ),
                                                 child: Text(
-                                                  part['code'] as String,
+                                                  (part['code'] as String?) ?? '',
                                                   style: TextStyle(
                                                     fontSize: 9.5,
                                                     fontWeight: FontWeight.w700,
@@ -1481,7 +1609,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                           if (part['desc'] != null) ...[
                                             const SizedBox(height: 4),
                                             Text(
-                                              part['desc'] as String,
+                                              (part['desc'] as String?) ?? '',
                                               style: TextStyle(
                                                 fontSize: 10.5,
                                                 color: isDark ? Colors.white60 : const Color(0xFF64748B),
@@ -1775,7 +1903,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                           child: _buildVehicleCard(
                             index: i,
                             title: 'Motor ${i + 1}:',
-                            name: v['shortName'] as String,
+                            name: (v['shortName'] as String?) ?? (v['name'] as String?) ?? 'Motor',
                             isSelected: isSelected,
                             badgeText: (v['isComplete'] as bool? ?? true) ? 'Terpilih' : 'Belum Lengkap',
                             isDark: isDark,
@@ -1871,7 +1999,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _vehicles[_selectedVehicleIndex]['name'] as String,
+                              (_currentVehicle['name'] as String?) ?? 'Honda Motor',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
@@ -1880,7 +2008,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              _vehicles[_selectedVehicleIndex]['plate'] as String,
+                              (_currentVehicle['plate'] as String?) ?? 'B 1234 XYZ',
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -2019,7 +2147,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        pkg['title'] as String,
+                                        (pkg['title'] as String?) ?? '',
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w800,
@@ -2028,7 +2156,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        pkg['desc'] as String,
+                                        (pkg['desc'] as String?) ?? '',
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: isDark
@@ -2123,7 +2251,7 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    part['title'] as String,
+                                    (part['title'] as String?) ?? '',
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w800,
@@ -2611,6 +2739,8 @@ class _BookingStep1ScreenState extends State<BookingStep1Screen> {
           color: isDark ? AppColors.borderDark : const Color(0xFF94A3B8),
           strokeWidth: 1.2,
           radius: 16,
+          dashWidth: 4.5,
+          dashSpace: 3.5,
         ),
         child: Container(
           width: 100,
